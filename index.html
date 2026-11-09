@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!--
+  PW Tools: página inicial (Perfect World)
+  Copyright (C) 2026 Heras (https://www.youtube.com/@christheras), feito junto com o Claude.
+
+  Este programa é software livre: você pode redistribuí-lo e/ou modificá-lo
+  sob os termos da Licença Pública Geral GNU, versão 3, publicada pela
+  Free Software Foundation.
+
+  Este programa é distribuído na esperança de que seja útil, mas SEM
+  NENHUMA GARANTIA; sem mesmo a garantia implícita de COMERCIALIZAÇÃO ou
+  ADEQUAÇÃO A UM PROPÓSITO PARTICULAR. Veja a Licença Pública Geral GNU
+  para mais detalhes: https://www.gnu.org/licenses/gpl-3.0.html
+  Código-fonte: https://github.com/christheras/LivroDivinoTracker
+-->
+<title>PW Tools</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&family=Chakra+Petch:wght@500;600;700&display=swap">
+<style>
+/* Página inicial: um cartão por ferramenta. Para adicionar outra, copie um <a class="tool"> dentro de .tools.
+   Cores e fontes são as mesmas do Rastreador de Livros Divinos; o cartão de Dusk usa o âmbar e a Chakra Petch do Dusk Tracker. */
+:root {
+  --bg: #0D1412; --surface: #151F1C; --surface2: #1A2623;
+  --fg: #E5EEEB; --muted: #98AAA4; --line: #28372F;
+  --accent: #4CC9A0; --on-accent: #06241A;
+  --t1: #B3C0C7; --t1bg: #212C31;
+  --t2: #5DD3AA; --t2bg: #12342A;
+  --t3: #86B8F2; --t3bg: #162A42;
+  --t4: #C4A3F2; --t4bg: #2A1D40;
+  --t5: #F2BA56; --t5bg: #3A2B0E;
+  --t6: #F29AAA; --t6bg: #41202A;
+  --t7: #E6A0DA; --t7bg: #3A1F36;
+  --dusk: #F2C53D; --dusk-bg: #3A2B0E; --on-dusk: #231A02;
+  --s-none: #EA4B50; --s-prog: #F0B429; --s-ok: #3FBF6F; --s-forged: #4AA3FF;
+  --font-display: 'Marcellus', 'Palatino Linotype', Georgia, serif;
+  --font-body: 'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-dusk: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
+  color-scheme: dark;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+:root[data-pw-theme="light"] {
+  --bg: #EDF1EF; --surface: #FFFFFF; --surface2: #F5F8F6;
+  --fg: #15211E; --muted: #4F5F5A; --line: #CFD9D5;
+  --accent: #0B6B55; --on-accent: #FFFFFF;
+  --t1: #4C5A62; --t1bg: #E3E8EB;
+  --t2: #0B6B55; --t2bg: #D8EFE6;
+  --t3: #1D58A3; --t3bg: #DCE9F8;
+  --t4: #6A3C9E; --t4bg: #EBE0F7;
+  --t5: #8A5200; --t5bg: #F8E8C6;
+  --t6: #A3243B; --t6bg: #F9DDE2;
+  --t7: #912C80; --t7bg: #F4DCF0;
+  --dusk: #7A5200; --dusk-bg: #F8E8C6; --on-dusk: #FFFFFF;
+  --s-none: #D8434A; --s-prog: #D9A21B; --s-ok: #2FA35C; --s-forged: #2F86E0;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0; min-height: 100vh;
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-block: 76px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2 { font-family: var(--font-display); font-weight: 400; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+
+.wrap { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 36px; }
+.eyebrow { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.hero { display: flex; flex-direction: column; gap: 10px; max-width: 62ch; }
+.hero h1 { font-size: clamp(34px, 6vw, 52px); line-height: 1.05; }
+.hero p.lead { color: var(--muted); font-size: 16px; }
+
+.tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 18px; }
+.tool {
+  --c: var(--accent); --on-c: var(--on-accent);
+  display: flex; flex-direction: column; gap: 16px;
+  background: var(--surface); color: inherit; text-decoration: none;
+  border: 1px solid var(--line); border-top: 4px solid var(--c);
+  border-radius: 14px; padding: 22px 22px 20px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.06);
+}
+.tool:hover, .tool:focus-visible { border-color: var(--c); box-shadow: 0 8px 26px rgba(0,0,0,.14); }
+@media (prefers-reduced-motion: no-preference) {
+  .tool { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+  .tool:hover, .tool:focus-visible { transform: translateY(-3px); }
+  .tool .go .ar { transition: transform .18s ease; }
+  .tool:hover .go .ar, .tool:focus-visible .go .ar { transform: translateX(4px); }
+}
+.tool .kind { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; font-weight: 600; color: var(--c); }
+.tool h2 { font-size: 28px; line-height: 1.1; margin-top: 4px; }
+.tool .desc { color: var(--muted); }
+.tool ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.tool li { display: flex; gap: 9px; align-items: baseline; }
+.tool li::before { content: ''; flex: none; width: 7px; height: 7px; border-radius: 2px; background: var(--c); transform: translateY(-1px); }
+.tool .go {
+  margin-top: auto; align-self: flex-start;
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--c); color: var(--on-c);
+  border-radius: 99px; padding: 10px 18px; font-weight: 600; min-height: 44px;
+}
+.tool .go .ar { font-size: 17px; line-height: 1; }
+
+/* Assinatura de cada tracker */
+.motif { background: var(--surface2); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.motif .cap { font-size: 12px; color: var(--muted); }
+.tiers { display: flex; gap: 5px; flex-wrap: wrap; }
+.tiers span { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--c); background: var(--cbg); border-radius: 6px; padding: 3px 8px; }
+.tiers .t1 { --c: var(--t1); --cbg: var(--t1bg); } .tiers .t2 { --c: var(--t2); --cbg: var(--t2bg); }
+.tiers .t3 { --c: var(--t3); --cbg: var(--t3bg); } .tiers .t4 { --c: var(--t4); --cbg: var(--t4bg); }
+.tiers .t5 { --c: var(--t5); --cbg: var(--t5bg); } .tiers .t6 { --c: var(--t6); --cbg: var(--t6bg); }
+.tiers .t7 { --c: var(--t7); --cbg: var(--t7bg); }
+
+.tool.dusk { --c: var(--dusk); --on-c: var(--on-dusk); }
+.tool.dusk h2 { font-family: var(--font-dusk); font-weight: 700; letter-spacing: .01em; font-size: 27px; }
+.tool.dusk .kind, .tool.dusk .go { font-family: var(--font-dusk); letter-spacing: .08em; }
+.tool.dusk .go { text-transform: uppercase; font-size: 13.5px; border-radius: 8px; }
+.tool.dusk .kind { letter-spacing: .14em; }
+.states { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+.states i { height: 9px; border-radius: 3px; background: var(--s); }
+.states .n { --s: var(--s-none); } .states .p { background: linear-gradient(90deg, var(--s-none), var(--s-prog), var(--s-ok)); }
+.states .o { --s: var(--s-ok); } .states .f { --s: var(--s-forged); }
+.states-l { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; font-size: 11.5px; color: var(--muted); line-height: 1.25; }
+
+.soon { color: var(--muted); font-size: 14px; border: 1px dashed var(--line); border-radius: 12px; padding: 14px 18px; }
+.soon b { color: var(--fg); font-weight: 600; }
+
+.credit { text-align: center; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 16px; }
+.credit a { color: var(--accent); font-weight: 600; display: inline-block; margin-top: 4px; }
+.credit .cp { display: block; margin-top: 6px; font-size: 12px; }
+.credit .cp a { margin-top: 0; font-weight: 500; }
+.credit b { font-family: var(--font-display); font-weight: 400; font-size: 18px; color: var(--accent); letter-spacing: .02em; }
+
+.theme { position: fixed; top: max(12px, env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); height: 40px; min-width: 40px; padding: 0 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; opacity: .9; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,.18); }
+.theme:hover, .theme:focus-visible { opacity: 1; border-color: var(--accent); }
+.theme .ti { font-size: 17px; line-height: 1; }
+@media (max-width: 520px) { .theme .tl { display: none; } .theme { width: 40px; padding: 0; justify-content: center; } }
+.totop { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font-size: 20px; line-height: 1; display: grid; place-items: center; opacity: 0; pointer-events: none; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,.18); }
+.totop.show { opacity: .5; pointer-events: auto; }
+.totop.show:hover, .totop.show:focus-visible { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) { .totop { transition: opacity .2s ease; } }
+</style>
+</head>
+<body>
+<button class="theme" id="theme" type="button"><span class="ti" aria-hidden="true"></span><span class="tl"></span></button>
+<button class="totop" id="totop" type="button" aria-label="Voltar ao topo">&#8593;</button>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Perfect World · PW Tools</p>
+    <h1>Escolha seu tracker</h1>
+    <p class="lead">Ferramentas para planejar e acompanhar suas atividades no jogo. O progresso de cada tracker fica salvo neste navegador.</p>
+  </header>
+
+  <main class="tools">
+    <a class="tool livros" href="livros/index.html">
+      <div>
+        <p class="kind">Livros Divinos</p>
+        <h2>Rastreador de livros</h2>
+      </div>
+      <p class="desc">Escolha os livros que você quer e veja tudo o que precisa forjar até chegar neles, tier por tier.</p>
+      <div class="motif" aria-hidden="true">
+        <div class="tiers"><span class="t1">T1</span><span class="t2">T2</span><span class="t3">T3</span><span class="t4">T4</span><span class="t5">T5</span><span class="t6">T6</span><span class="t7">T7</span></div>
+        <p class="cap">De Iniciante a Enciclopedista</p>
+      </div>
+      <ul>
+        <li>Árvore de receitas completa de cada livro</li>
+        <li>Fragmentos, livros em branco e custo total</li>
+        <li>Progresso por tier, do vermelho ao verde</li>
+      </ul>
+      <span class="go">Abrir tracker de livros <span class="ar" aria-hidden="true">&rarr;</span></span>
+    </a>
+
+    <a class="tool dusk" href="dusk/index.html">
+      <div>
+        <p class="kind">Equipamentos Dusk</p>
+        <h2>Dusk Tracker</h2>
+      </div>
+      <p class="desc">Escolha a peça numa fornalha de Dusk, coloque no personagem e acompanhe o que falta para forjar.</p>
+      <div class="motif" aria-hidden="true">
+        <div class="states"><i class="n"></i><i class="p"></i><i class="o"></i><i class="f"></i></div>
+        <div class="states-l"><span>Não iniciado</span><span>Em progresso</span><span>Suficiente</span><span>Forjado</span></div>
+      </div>
+      <ul>
+        <li>Fornalhas de Dusk com todas as peças</li>
+        <li>Materiais, Almas e Essências do Crepúsculo</li>
+        <li>Tabelas de drop para saber onde farmar</li>
+      </ul>
+      <span class="go">Abrir tracker de Dusk <span class="ar" aria-hidden="true">&rarr;</span></span>
+    </a>
+  </main>
+
+  <p class="soon"><b>Em breve:</b> mais trackers e guias de Perfect World neste mesmo lugar.</p>
+
+  <p class="credit">Feito por <b>Heras</b>, junto com o Claude.<br><a href="https://www.youtube.com/@christheras" target="_blank" rel="noopener">youtube.com/@christheras</a><span class="cp">© 2026 Heras · Software livre sob a <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GNU GPL v3</a> · <a href="https://github.com/christheras/LivroDivinoTracker" target="_blank" rel="noopener">Código-fonte</a></span><span class="cp">Marcas e imagens de Perfect World pertencem aos respectivos titulares. Projeto de fã, sem vínculo oficial com o jogo.</span></p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ===== PW Tools: tema compartilhado (padrão v4) =====
+     Copie este bloco IGUAL em toda página nova. A página precisa de:
+       1. <button id="theme"> com um <span aria-hidden="true"> (ícone) e um <span class="tl"> (texto);
+       2. CSS escuro no :root e as cores do tema claro em :root[data-pw-theme="light"].
+     O padrão é escuro. A escolha fica em localStorage na chave 'pw-tools-tema' ('dark' ou 'light'),
+     a mesma para todas as páginas do site. Não usa o endereço (#) da página. */
+  (function () {
+    var KEY = 'pw-tools-tema', TAG = 'pw-tools-tema:';
+    var root = document.documentElement, btn = document.getElementById('theme');
+    function ok(v) { return v === 'dark' || v === 'light' ? v : null; }
+    /* window.name é a reserva para quando o navegador bloqueia o localStorage */
+    function stored() {
+      try { var v = ok(localStorage.getItem(KEY)); if (v) return v; } catch (e) {}
+      try { if (window.name.indexOf(TAG) === 0) return ok(window.name.slice(TAG.length)); } catch (e) {}
+      return null;
+    }
+    function save(v) {
+      try { localStorage.setItem(KEY, v); } catch (e) {}
+      try { if (!window.name || window.name.indexOf(TAG) === 0) window.name = TAG + v; } catch (e) {}
+    }
+    var theme = stored() || 'dark';
+    function apply() {
+      var d = theme === 'dark';
+      root.setAttribute('data-pw-theme', theme);
+      if (!btn) return;
+      var ic = btn.querySelector('[aria-hidden]'), tl = btn.querySelector('.tl');
+      if (ic) ic.textContent = d ? '☀' : '☾';
+      if (tl) tl.textContent = d ? 'Tema claro' : 'Tema escuro';
+      btn.setAttribute('aria-label', d ? 'Mudar para o tema claro' : 'Mudar para o tema escuro');
+    }
+    apply();
+    if (btn) btn.addEventListener('click', function () {
+      theme = theme === 'dark' ? 'light' : 'dark';
+      save(theme);
+      apply();
+    });
+    function sync() { var s = stored() || 'dark'; if (s !== theme) { theme = s; apply(); } }
+    window.addEventListener('pageshow', sync);
+    window.addEventListener('storage', sync);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) sync(); });
+  })();
+  /* ===== fim do tema compartilhado ===== */
+
+  var topBtn = document.getElementById('totop');
+  function onScroll() { topBtn.classList.toggle('show', window.scrollY > 200); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  topBtn.addEventListener('click', function () {
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  });
+  onScroll();
+})();
+</script>
+</body>
+</html>

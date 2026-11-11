@@ -752,7 +752,7 @@ if (typeof module !== 'undefined' && module.exports) {
       h('div', { class: 'inv-top' }, [iconRaw(label, slug(label), 34, 'tm'), h('span', { text: label })]),
       h('div', { class: 'inv-row' }, [
         h('label', { class: 'pin' }, [h('span', { class: 'k', text: 'Tenho' }), numInput('Tenho: ' + label, 'have', field)]),
-        h('label', { class: 'pin' }, [h('span', { class: 'k', text: 'Preço un.' }), numInput('Preço unitário: ' + label, 'prices', field)])
+        h('label', { class: 'pin' }, [h('span', { class: 'k', text: 'Preço un. (moedas)' }), numInput('Preço unitário: ' + label, 'prices', field)])
       ])
     ]);
   }
@@ -795,10 +795,10 @@ if (typeof module !== 'undefined' && module.exports) {
     var mm = materials(t1);
     var leftT1 = Math.max(0, t1 - doneT1);
     var buyF = Math.max(0, leftT1 * 3 - hf), buyB = Math.max(0, leftT1 * 4 - hb);
-    costRefs.all.textContent = fmt(mm.fragments * pf + mm.blanks * pb);
+    costRefs.all.textContent = fmt(mm.fragments * pf + mm.blanks * pb) + ' moedas';
     costRefs.det.textContent = fmt(mm.fragments) + ' × ' + fmt(pf) + ' + ' + fmt(mm.blanks) + ' × ' + fmt(pb);
     costRefs.left.hidden = !t1;
-    costRefs.leftV.textContent = (pf || pb) ? fmt(leftT1 * 3 * pf + leftT1 * 4 * pb) : 'Informe os preços';
+    costRefs.leftV.textContent = (pf || pb) ? fmt(leftT1 * 3 * pf + leftT1 * 4 * pb) + ' moedas' : 'Informe os preços';
     var showBuy = !!(t1 && (hf || hb));
     costRefs.buy.hidden = !showBuy;
     if (showBuy) {
@@ -806,7 +806,7 @@ if (typeof module !== 'undefined' && module.exports) {
       costRefs.buy.className = 'crow ' + (ok ? 'pos' : 'neg');
       costRefs.buyL.textContent = ok ? 'Estoque completo' : 'Falta comprar';
       costRefs.buyV.textContent = ok ? 'Você já tem tudo o que falta' : fmt(buyF) + ' fragmentos · ' + fmt(buyB) + ' livros em branco';
-      costRefs.buyS.textContent = (!ok && (pf || pb)) ? 'Custo: ' + fmt(buyF * pf + buyB * pb) : '';
+      costRefs.buyS.textContent = (!ok && (pf || pb)) ? 'Custo: ' + fmt(buyF * pf + buyB * pb) + ' moedas' : '';
       costRefs.buyS.hidden = !costRefs.buyS.textContent;
     }
   }

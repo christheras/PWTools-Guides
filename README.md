@@ -1,8 +1,6 @@
 # PW Tools – Guides
 
-## Concentrador de ferramendas e guides para o PW
-
-Ferramentas e guias de Perfect World reunidos em um só lugar, para economizar tempo durante o jogo.
+Rastreadores e guias de Perfect World reunidos em um só lugar, para economizar tempo durante o jogo.
 
 Para usar, acesse: https://christheras.github.io/PWTools-Guides/
 
@@ -10,11 +8,19 @@ Não precisa instalar nada, criar conta nem fazer login. Tudo funciona direto no
 
 ## O que tem
 
+Rastreadores
+
 Rastreador de Livros Divinos: acompanha os livros divinos, seus atributos e o que falta para completar a coleção.
 
 Dusk Tracker: receitas e materiais dos equipamentos Dusk (armas, armaduras e acessórios), com almas, essências e o total de materiais necessários.
 
-As duas ferramentas têm tema escuro e claro, botão para voltar ao início e botão para voltar ao topo.
+Guias
+
+Resolução do jogo: passo a passo com imagens para mudar a resolução editando o arquivo SystemSettings.ini.
+
+Layout e atalhos: como copiar e renomear os arquivos da pasta Layout para que todas as contas usem as mesmas janelas e teclas.
+
+Todas as páginas têm tema escuro e claro, botão para voltar ao início e botão para voltar ao topo.
 
 ## Colaborando
 

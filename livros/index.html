@@ -29,7 +29,7 @@
   --fg: #E5EEEB; --muted: #98AAA4; --line: #28372F;
   --accent: #4CC9A0; --on-accent: #06241A; --danger: #F08A80;
   --cs: 65%; --cl: 48%; --ts: 75%; --tl: 72%; --bs: 45%; --bl: 14%; --brs: 55%; --brl: 40%;
-  --okbg: #1F9D55; --okfg: #FFFFFF; --okbd: #5FE39A; --xbg: #FFFFFF; --xfg: #15211E; --xmuted: #4F5F5A; --xline: #CFD9D5; --xinp: #F5F8F6; --xyel: #9A6400; --fgbg: #4B49C9; --fgfg: #FFFFFF; --fgbd: #A9A7FF;
+  --okbg: #1F9D55; --okfg: #FFFFFF; --okbd: #5FE39A; --xbg: #353C47; --xfg: #EAEEF2; --xmuted: #AAB4C0; --xline: #4B5463; --xinp: #272D36; --xyel: #F4C74F; --fgbg: #4B49C9; --fgfg: #FFFFFF; --fgbd: #A9A7FF;
   --t1: #B3C0C7; --t1bg: #212C31;
   --t2: #5DD3AA; --t2bg: #12342A;
   --t3: #86B8F2; --t3bg: #162A42;
@@ -47,7 +47,7 @@
   --fg: #15211E; --muted: #4F5F5A; --line: #CFD9D5;
   --accent: #0B6B55; --on-accent: #FFFFFF; --danger: #B3362B;
   --cs: 70%; --cl: 45%; --ts: 80%; --tl: 26%; --bs: 85%; --bl: 91%; --brs: 65%; --brl: 50%;
-  --okbg: #1F9D55; --okfg: #FFFFFF; --okbd: #14783E; --xbg: #15211E; --xfg: #E5EEEB; --xmuted: #98AAA4; --xline: #2D4239; --xinp: #1F2D29; --xyel: #F4C74F; --fgbg: #4B49C9; --fgfg: #FFFFFF; --fgbd: #3533A0;
+  --okbg: #1F9D55; --okfg: #FFFFFF; --okbd: #14783E; --xbg: #353C47; --xfg: #EAEEF2; --xmuted: #AAB4C0; --xline: #4B5463; --xinp: #272D36; --xyel: #F4C74F; --fgbg: #4B49C9; --fgfg: #FFFFFF; --fgbd: #3533A0;
   --t1: #4C5A62; --t1bg: #E3E8EB;
   --t2: #0B6B55; --t2bg: #D8EFE6;
   --t3: #1D58A3; --t3bg: #DCE9F8;
@@ -130,6 +130,16 @@ button:focus-visible, summary:focus-visible, input:focus-visible { outline: 2px 
 .sb.costs .ico { --c: var(--xfg); --cbg: var(--xinp); border-color: var(--xline); }
 .sb.costs .cout { border-top-color: var(--xline); }
 .sb.costs .cout .v { color: var(--xyel); font-weight: 600; }
+.sb.costs .btn { background: transparent; border-color: var(--xline); color: var(--xfg); min-height: 30px; padding: 3px 12px; font-size: 13px; }
+.sb.costs .btn:hover { border-color: var(--xyel); }
+.sb.costs .btn.danger { border-color: var(--danger); color: var(--danger); }
+.sb.costs .pw input:focus-visible { outline: 2px solid var(--xyel); outline-offset: 1px; }
+.inv-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.inv-m { display: flex; flex-direction: column; gap: 6px; }
+.inv-top { display: flex; align-items: center; gap: 10px; font-weight: 600; line-height: 1.2; }
+.inv-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.inv-row .pw input { width: 100%; }
+.sb.costs .inv-top { color: var(--xfg); }
 .costs .k { color: var(--muted); font-size: 12.5px; }
 .cin { display: flex; flex-direction: column; gap: 8px; }
 .pin { display: flex; flex-direction: column; gap: 3px; }
@@ -510,7 +520,7 @@ if (typeof module !== 'undefined' && module.exports) {
   var STORE = 'guia-livros-divinos-v2';
   var DEFAULT_GOALS = ['Pan Gu'];
 
-  var state = { goals: DEFAULT_GOALS.slice(), cat: 'gm', prog: {}, prices: { frag: 0, blank: 0 } };
+  var state = { goals: DEFAULT_GOALS.slice(), cat: 'gm', prog: {}, prices: { frag: 0, blank: 0 }, have: { frag: 0, blank: 0 } };
   try {
     var s = JSON.parse(localStorage.getItem(STORE));
     if (s && typeof s === 'object') {
@@ -518,6 +528,7 @@ if (typeof module !== 'undefined' && module.exports) {
       if (s.cat) state.cat = s.cat;
       if (s.prog && typeof s.prog === 'object') state.prog = s.prog;
       if (s.prices && typeof s.prices === 'object') state.prices = { frag: Math.max(0, +s.prices.frag || 0), blank: Math.max(0, +s.prices.blank || 0) };
+      if (s.have && typeof s.have === 'object') state.have = { frag: Math.max(0, +s.have.frag || 0), blank: Math.max(0, +s.have.blank || 0) };
     }
   } catch (e) {}
   var query = '';
@@ -705,17 +716,29 @@ if (typeof module !== 'undefined' && module.exports) {
     });
   }
 
-  function priceInput(label, field) {
+  function numInput(label, store, field) {
     var inp = h('input', { type: 'text', inputmode: 'numeric', autocomplete: 'off', placeholder: '0', 'aria-label': label });
-    inp.value = state.prices[field] ? String(state.prices[field]) : '';
+    inp.value = state[store][field] ? String(state[store][field]) : '';
     inp.addEventListener('input', function () {
       var v = parseInt(inp.value.replace(/\D/g, ''), 10);
-      state.prices[field] = isNaN(v) ? 0 : v;
+      state[store][field] = isNaN(v) ? 0 : v;
       persist();
       updateCost();
+      updateMats();
     });
-    return h('label', { class: 'pin' }, [h('span', { class: 'k', text: label }), h('span', { class: 'pw' }, [iconRaw(label, slug(label), 34, 'tm'), inp, h('span', { class: 'cu', text: 'moedas' })])]);
+    return h('span', { class: 'pw' }, [inp]);
   }
+  /* Um material: ícone e nome, depois quanto o jogador tem e o preço de cada unidade. */
+  function matInput(label, field) {
+    return h('div', { class: 'inv-m' }, [
+      h('div', { class: 'inv-top' }, [iconRaw(label, slug(label), 34, 'tm'), h('span', { text: label })]),
+      h('div', { class: 'inv-row' }, [
+        h('label', { class: 'pin' }, [h('span', { class: 'k', text: 'Tenho' }), numInput('Tenho: ' + label, 'have', field)]),
+        h('label', { class: 'pin' }, [h('span', { class: 'k', text: 'Preço un.' }), numInput('Preço unitário: ' + label, 'prices', field)])
+      ])
+    ]);
+  }
+  var clearTimer = null, clearAsk = false;
 
   var costRefs = {}, doneT1 = 0;
   function renderCosts() {
@@ -723,22 +746,50 @@ if (typeof module !== 'undefined' && module.exports) {
     box.textContent = '';
     costRefs.all = h('div', { class: 'v num' });
     costRefs.left = h('div', { class: 'r num' });
+    costRefs.buy = h('div', { class: 'r num' });
     costRefs.det = h('div', { class: 'r num' });
-    box.appendChild(h('div', { class: 'sb-h', text: 'Preço dos materiais' }));
-    box.appendChild(priceInput(MAT_FRAG, 'frag'));
-    box.appendChild(priceInput(MAT_BLANK, 'blank'));
-    box.appendChild(h('div', { class: 'cout' }, [h('div', { class: 'k', text: 'Gasto previsto (árvore inteira)' }), costRefs.all, costRefs.left, costRefs.det]));
+    var clr = h('button', { class: 'btn' + (clearAsk ? ' danger' : ''), type: 'button', text: clearAsk ? 'Confirmar?' : 'Limpar', onclick: function () {
+      if (clearAsk) {
+        clearTimeout(clearTimer); clearAsk = false;
+        state.have = { frag: 0, blank: 0 }; state.prices = { frag: 0, blank: 0 };
+        persist(); renderCosts(); updateMats();
+      } else {
+        clearAsk = true; renderCosts();
+        clearTimer = setTimeout(function () { clearAsk = false; renderCosts(); }, 3000);
+      }
+    } });
+    box.appendChild(h('div', { class: 'inv-h' }, [h('div', { class: 'sb-h', text: 'Seu inventário' }), clr]));
+    box.appendChild(matInput(MAT_FRAG, 'frag'));
+    box.appendChild(matInput(MAT_BLANK, 'blank'));
+    box.appendChild(h('div', { class: 'cout' }, [h('div', { class: 'k', text: 'Gasto previsto (árvore inteira)' }), costRefs.all, costRefs.left, costRefs.buy, costRefs.det]));
     updateCost();
   }
   function updateCost() {
     if (!costRefs.all) return;
     var pf = state.prices.frag, pb = state.prices.blank;
+    var hf = state.have.frag, hb = state.have.blank;
     var t1 = data && data.byTier ? data.byTier[1] : 0;
     var mm = materials(t1);
     var leftT1 = Math.max(0, t1 - doneT1);
-    costRefs.all.textContent = fmt(mm.fragments * pf + mm.blanks * pb) + ' moedas';
+    var buyF = Math.max(0, leftT1 * 3 - hf), buyB = Math.max(0, leftT1 * 4 - hb);
+    costRefs.all.textContent = fmt(mm.fragments * pf + mm.blanks * pb);
     costRefs.det.textContent = fmt(mm.fragments) + ' × ' + fmt(pf) + ' + ' + fmt(mm.blanks) + ' × ' + fmt(pb);
-    costRefs.left.textContent = !t1 ? 'Escolha um livro para calcular' : ((pf || pb) ? 'Ainda a gastar: ' + fmt(leftT1 * 3 * pf + leftT1 * 4 * pb) + ' moedas' : 'Informe os preços para ver o total');
+    costRefs.left.textContent = !t1 ? 'Escolha um livro para calcular' : ((pf || pb) ? 'Ainda a gastar: ' + fmt(leftT1 * 3 * pf + leftT1 * 4 * pb) : 'Informe os preços para ver o total');
+    costRefs.buy.textContent = (t1 && (hf || hb)) ? 'Falta comprar: ' + fmt(buyF) + ' fragmentos e ' + fmt(buyB) + ' livros em branco' + ((pf || pb) ? ' (' + fmt(buyF * pf + buyB * pb) + ')' : '') : '';
+    costRefs.buy.hidden = !costRefs.buy.textContent;
+  }
+  /* Linhas "Ainda a gastar" dos painéis de materiais, já descontando o que o jogador tem. */
+  function updateMats() {
+    if (!sumRefs || !sumRefs.matFrag || !data || !data.byTier) return;
+    var left = Math.max(0, data.byTier[1] - doneT1);
+    if (!left) { sumRefs.matFrag.textContent = sumRefs.matBlank.textContent = 'Todos os Tier 1 já foram feitos'; return; }
+    function line(need, have) {
+      var s = 'Ainda a gastar: ' + fmt(need);
+      if (have > 0) s += ' · tenho ' + fmt(have) + ' · ' + (have >= need ? 'suficiente' : 'faltam ' + fmt(need - have));
+      return s;
+    }
+    sumRefs.matFrag.textContent = line(left * 3, state.have.frag);
+    sumRefs.matBlank.textContent = line(left * 4, state.have.blank);
   }
 
   function matsPanel() {
@@ -1030,12 +1081,7 @@ if (typeof module !== 'undefined' && module.exports) {
     sumRefs.sub.textContent = total ? done + ' de ' + total + ' livros fabricados' : 'Sem livros na árvore';
     doneT1 = doneBy[1] || 0;
     updateCost();
-    if (sumRefs.matFrag) {
-      var left = data.byTier[1] - (doneBy[1] || 0);
-      var msg = left > 0 ? 'Ainda a gastar: ' : 'Todos os Tier 1 já foram feitos';
-      sumRefs.matFrag.textContent = left > 0 ? msg + fmt(left * 3) : msg;
-      sumRefs.matBlank.textContent = left > 0 ? msg + fmt(left * 4) : msg;
-    }
+    updateMats();
   }
 
   /* ---------- eventos ---------- */

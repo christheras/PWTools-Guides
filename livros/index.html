@@ -129,11 +129,29 @@ button:focus-visible, summary:focus-visible, input:focus-visible { outline: 2px 
 .sb.costs .pw input { background: var(--xinp); border-color: var(--xline); color: var(--xfg); }
 .sb.costs .ico { --c: var(--xfg); --cbg: var(--xinp); border-color: var(--xline); }
 .sb.costs .cout { border-top-color: var(--xline); }
-.sb.costs .cout .v { color: var(--xyel); font-weight: 600; }
+.sb.costs .cout .v { color: var(--xfg); font-weight: 600; }
 .sb.costs .btn { background: transparent; border-color: var(--xline); color: var(--xfg); min-height: 30px; padding: 3px 12px; font-size: 13px; }
 .sb.costs .btn:hover { border-color: var(--xyel); }
 .sb.costs .btn.danger { border-color: var(--danger); color: var(--danger); }
 .sb.costs .pw input:focus-visible { outline: 2px solid var(--xyel); outline-offset: 1px; }
+.pos { color: var(--okbd); font-weight: 600; }
+.neg { color: var(--danger); font-weight: 600; }
+.rem { color: var(--t5); font-weight: 600; }
+.sb.costs .pos { color: #5FE39A; }
+.sb.costs .neg { color: #FF8F85; }
+.sb.costs .rem { color: #F4C74F; }
+.crow { display: flex; flex-direction: column; gap: 1px; padding: 6px 0 6px 10px; border-left: 3px solid var(--xline); margin-top: 6px; }
+.crow[hidden], .cs[hidden] { display: none; }
+.crow .cl { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--xmuted); }
+.crow .cv { font-family: var(--font-mono); font-size: 13.5px; overflow-wrap: anywhere; }
+.crow .cs { font-family: var(--font-mono); font-size: 12.5px; color: var(--xmuted); }
+.crow.rem { border-left-color: #F4C74F; }
+.crow.neg { border-left-color: #FF8F85; }
+.crow.pos { border-left-color: #5FE39A; }
+.crow.rem .cv { color: #F4C74F; }
+.crow.neg .cv { color: #FF8F85; }
+.crow.pos .cv { color: #5FE39A; }
+.crow.rem, .crow.neg, .crow.pos { font-weight: 400; }
 .inv-f { display: flex; justify-content: flex-end; border-top: 1px solid var(--xline); padding-top: 10px; }
 .inv-m { display: flex; flex-direction: column; gap: 6px; }
 .inv-top { display: flex; align-items: center; gap: 10px; font-weight: 600; line-height: 1.2; }
@@ -745,8 +763,12 @@ if (typeof module !== 'undefined' && module.exports) {
     var box = $('costs');
     box.textContent = '';
     costRefs.all = h('div', { class: 'v num' });
-    costRefs.left = h('div', { class: 'r num' });
-    costRefs.buy = h('div', { class: 'r num' });
+    costRefs.leftV = h('span', { class: 'cv' });
+    costRefs.left = h('div', { class: 'crow rem' }, [h('span', { class: 'cl', text: 'Ainda a gastar' }), costRefs.leftV]);
+    costRefs.buyL = h('span', { class: 'cl', text: 'Falta comprar' });
+    costRefs.buyV = h('span', { class: 'cv' });
+    costRefs.buyS = h('span', { class: 'cs' });
+    costRefs.buy = h('div', { class: 'crow neg' }, [costRefs.buyL, costRefs.buyV, costRefs.buyS]);
     costRefs.det = h('div', { class: 'r num' });
     var clr = h('button', { class: 'btn' + (clearAsk ? ' danger' : ''), type: 'button', text: clearAsk ? 'Confirmar?' : 'Limpar', onclick: function () {
       if (clearAsk) {
@@ -775,22 +797,36 @@ if (typeof module !== 'undefined' && module.exports) {
     var buyF = Math.max(0, leftT1 * 3 - hf), buyB = Math.max(0, leftT1 * 4 - hb);
     costRefs.all.textContent = fmt(mm.fragments * pf + mm.blanks * pb);
     costRefs.det.textContent = fmt(mm.fragments) + ' × ' + fmt(pf) + ' + ' + fmt(mm.blanks) + ' × ' + fmt(pb);
-    costRefs.left.textContent = !t1 ? 'Escolha um livro para calcular' : ((pf || pb) ? 'Ainda a gastar: ' + fmt(leftT1 * 3 * pf + leftT1 * 4 * pb) : 'Informe os preços para ver o total');
-    costRefs.buy.textContent = (t1 && (hf || hb)) ? 'Falta comprar: ' + fmt(buyF) + ' fragmentos e ' + fmt(buyB) + ' livros em branco' + ((pf || pb) ? ' (' + fmt(buyF * pf + buyB * pb) + ')' : '') : '';
-    costRefs.buy.hidden = !costRefs.buy.textContent;
+    costRefs.left.hidden = !t1;
+    costRefs.leftV.textContent = (pf || pb) ? fmt(leftT1 * 3 * pf + leftT1 * 4 * pb) : 'Informe os preços';
+    var showBuy = !!(t1 && (hf || hb));
+    costRefs.buy.hidden = !showBuy;
+    if (showBuy) {
+      var ok = !buyF && !buyB;
+      costRefs.buy.className = 'crow ' + (ok ? 'pos' : 'neg');
+      costRefs.buyL.textContent = ok ? 'Estoque completo' : 'Falta comprar';
+      costRefs.buyV.textContent = ok ? 'Você já tem tudo o que falta' : fmt(buyF) + ' fragmentos · ' + fmt(buyB) + ' livros em branco';
+      costRefs.buyS.textContent = (!ok && (pf || pb)) ? 'Custo: ' + fmt(buyF * pf + buyB * pb) : '';
+      costRefs.buyS.hidden = !costRefs.buyS.textContent;
+    }
   }
   /* Linhas "Ainda a gastar" dos painéis de materiais, já descontando o que o jogador tem. */
   function updateMats() {
     if (!sumRefs || !sumRefs.matFrag || !data || !data.byTier) return;
     var left = Math.max(0, data.byTier[1] - doneT1);
     if (!left) { sumRefs.matFrag.textContent = sumRefs.matBlank.textContent = 'Todos os Tier 1 já foram feitos'; return; }
-    function line(need, have) {
-      var s = 'Ainda a gastar: ' + fmt(need);
-      if (have > 0) s += ' · tenho ' + fmt(have) + ' · ' + (have >= need ? 'suficiente' : 'faltam ' + fmt(need - have));
-      return s;
+    function line(el, need, have) {
+      el.textContent = '';
+      el.appendChild(h('span', { class: 'rem', text: 'Ainda a gastar: ' + fmt(need) }));
+      if (have > 0) {
+        el.appendChild(document.createTextNode(' · '));
+        el.appendChild(h('span', { class: 'pos', text: 'tenho ' + fmt(have) }));
+        el.appendChild(document.createTextNode(' · '));
+        el.appendChild(have >= need ? h('span', { class: 'pos', text: 'suficiente' }) : h('span', { class: 'neg', text: 'faltam ' + fmt(need - have) }));
+      }
     }
-    sumRefs.matFrag.textContent = line(left * 3, state.have.frag);
-    sumRefs.matBlank.textContent = line(left * 4, state.have.blank);
+    line(sumRefs.matFrag, left * 3, state.have.frag);
+    line(sumRefs.matBlank, left * 4, state.have.blank);
   }
 
   function matsPanel() {

@@ -120,6 +120,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .tiers .t5 { --c: var(--t5); --cbg: var(--t5bg); } .tiers .t6 { --c: var(--t6); --cbg: var(--t6bg); }
 .tiers .t7 { --c: var(--t7); --cbg: var(--t7bg); }
 
+.tool.guia { --c: var(--t3); --on-c: #06182E; }
+:root[data-pw-theme="light"] .tool.guia { --on-c: #FFFFFF; }
+.tool.guia2 { --c: var(--t4); --on-c: #1E0F33; }
+:root[data-pw-theme="light"] .tool.guia2 { --on-c: #FFFFFF; }
 .tool.dusk { --c: var(--dusk); --on-c: var(--on-dusk); }
 .tool.dusk h2 { font-family: var(--font-dusk); font-weight: 700; letter-spacing: .01em; font-size: 27px; }
 .tool.dusk .kind, .tool.dusk .go { font-family: var(--font-dusk); letter-spacing: .08em; }
@@ -196,6 +200,33 @@ button { font: inherit; color: inherit; cursor: pointer; }
         <li>Tabelas de drop para saber onde farmar</li>
       </ul>
       <span class="go">Abrir tracker de Dusk <span class="ar" aria-hidden="true">&rarr;</span></span>
+    </a>
+
+    <a class="tool guia" href="resolucao/">
+      <div>
+        <p class="kind">Guia</p>
+        <h2>Resolução do jogo</h2>
+      </div>
+      <p class="desc">Mude a resolução do Perfect World editando um arquivo, com imagens mostrando onde clicar.</p>
+      <ul>
+        <li>Onde fica o SystemSettings.ini</li>
+        <li>Quais linhas editar</li>
+        <li>Exemplo em GIF</li>
+      </ul>
+      <span class="go">Abrir o guia <span class="ar" aria-hidden="true">&rarr;</span></span>
+    </a>
+
+    <a class="tool guia2" href="layout/">
+      <div>
+        <p class="kind">Guia</p>
+        <h2>Layout e atalhos</h2>
+      </div>
+      <p class="desc">Deixe todas as suas contas com as mesmas janelas e teclas, copiando e renomeando dois arquivos.</p>
+      <ul>
+        <li>Onde ficam os arquivos de layout</li>
+        <li>Como renomear com o ID da conta</li>
+      </ul>
+      <span class="go">Abrir o guia <span class="ar" aria-hidden="true">&rarr;</span></span>
     </a>
   </main>
 

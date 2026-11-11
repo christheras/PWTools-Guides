@@ -134,7 +134,7 @@ button:focus-visible, summary:focus-visible, input:focus-visible { outline: 2px 
 .sb.costs .btn:hover { border-color: var(--xyel); }
 .sb.costs .btn.danger { border-color: var(--danger); color: var(--danger); }
 .sb.costs .pw input:focus-visible { outline: 2px solid var(--xyel); outline-offset: 1px; }
-.inv-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.inv-f { display: flex; justify-content: flex-end; border-top: 1px solid var(--xline); padding-top: 10px; }
 .inv-m { display: flex; flex-direction: column; gap: 6px; }
 .inv-top { display: flex; align-items: center; gap: 10px; font-weight: 600; line-height: 1.2; }
 .inv-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -758,10 +758,11 @@ if (typeof module !== 'undefined' && module.exports) {
         clearTimer = setTimeout(function () { clearAsk = false; renderCosts(); }, 3000);
       }
     } });
-    box.appendChild(h('div', { class: 'inv-h' }, [h('div', { class: 'sb-h', text: 'Seu inventário' }), clr]));
+    box.appendChild(h('div', { class: 'sb-h', text: 'Materiais' }));
     box.appendChild(matInput(MAT_FRAG, 'frag'));
     box.appendChild(matInput(MAT_BLANK, 'blank'));
     box.appendChild(h('div', { class: 'cout' }, [h('div', { class: 'k', text: 'Gasto previsto (árvore inteira)' }), costRefs.all, costRefs.left, costRefs.buy, costRefs.det]));
+    box.appendChild(h('div', { class: 'inv-f' }, [clr]));
     updateCost();
   }
   function updateCost() {

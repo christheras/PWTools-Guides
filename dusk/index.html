@@ -338,14 +338,14 @@ button.cell:hover{border-color:var(--accent-line)}
 .fb.up.show:hover,.fb.up.show:focus-visible{opacity:1}
 @media (max-width:560px){.fb .tl{display:none}.fb.sw .tl{display:inline}.fb.th{width:38px;padding:0;justify-content:center}}
 @media (prefers-reduced-motion:no-preference){.fb.up{transition:opacity .2s}}
-#sg{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;pointer-events:none;background:rgba(0,0,0,.55)}
-#sg span{font:700 clamp(56px,16vw,220px)/1 var(--font-head,'Chakra Petch',sans-serif);color:#f2c53d;text-shadow:0 0 30px rgba(242,197,61,.6);letter-spacing:.02em;animation:sgb 1s steps(1) infinite}
-@keyframes sgb{0%{opacity:1}50%{opacity:.08}}
+#x7{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;pointer-events:none;background:rgba(0,0,0,.55)}
+#x7 span{font:700 clamp(56px,16vw,220px)/1 var(--font-head,'Chakra Petch',sans-serif);color:#f2c53d;text-shadow:0 0 30px rgba(242,197,61,.6);letter-spacing:.02em;animation:x7b 1s steps(1) infinite}
+@keyframes x7b{0%{opacity:1}50%{opacity:.08}}
 </style>
 
 </head>
 <body>
-<a class="fb sw" href="../index.html" aria-label="Voltar para a página inicial"><span class="ic" aria-hidden="true">&#8592;</span><span class="tl">Início</span></a>
+<a class="fb sw" href="../" aria-label="Voltar para a página inicial"><span class="ic" aria-hidden="true">&#8592;</span><span class="tl">Início</span></a>
 <button class="fb th" id="theme" type="button"><span class="ic" aria-hidden="true"></span><span class="tl"></span></button>
 <button class="fb up" id="totop" type="button" aria-label="Voltar ao topo">&#8593;</button>
 <div class="wrap">
@@ -456,13 +456,15 @@ function build(id,key,depth,done,out){
   out.push({key:key,item:it,depth:depth,done:isDone,root:depth===0});
 }
 /* Estado inicial limpo: sem peças equipadas, bag vazia e nada acompanhado */
-function sig(i,q){
-  const w=String.fromCharCode(104,101,114,97,115);
-  if(!i||!q||norm(i.value.trim())!==w||parseInt(q.value,10)!==66)return false;
-  if(document.getElementById('sg'))return true;
-  const d=document.createElement('div');d.id='sg';d.setAttribute('aria-hidden','true');
-  d.innerHTML='<span>By: '+w.charAt(0).toUpperCase()+w.slice(1)+'</span>';
-  document.body.appendChild(d);setTimeout(()=>d.remove(),5000);return true;
+function pq(i,q){
+  if(!i||!q)return false;
+  const s=norm(i.value.trim())+'|'+parseInt(q.value,10);
+  let x=2166136261;for(let k=0;k<s.length;k++){x^=s.charCodeAt(k);x=Math.imul(x,16777619)>>>0}
+  if(x!==4101898764)return false;
+  if(document.getElementById('x7'))return true;
+  const d=document.createElement('div');d.id='x7';d.setAttribute('aria-hidden','true');
+  const t=document.createElement('span');t.textContent=String.fromCharCode.apply(null,[66,121,58,32,72,101,114,97,115]);
+  d.appendChild(t);document.body.appendChild(d);setTimeout(()=>d.remove(),5000);return true;
 }
 function sample(){
   return {furn:'arma',group:'Espadas',cur:0,sets:[{name:'Principal',equipped:{}},{name:'Secundário',equipped:{}}],watch:[],inv:{}};
@@ -473,7 +475,7 @@ const load=()=>{try{
   const o=JSON.parse(localStorage.getItem('dusk-tracker-v2'));
   if(o&&o.equipped&&o.inv&&o.furn)return {furn:o.furn,group:o.group,inv:o.inv,watch:o.watch||[],cur:0,sets:[{name:'Principal',equipped:o.equipped},{name:'Secundário',equipped:{}}]};
 }catch(e){}return null};
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({furn:S.furn,group:S.group,sets:S.sets,cur:S.cur,inv:S.inv,watch:S.watch,wq:S.wq}))}catch(e){}};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({furn:S.furn,group:S.group,sets:S.sets,cur:S.cur,inv:S.inv,watch:S.watch,wq:S.wq,sum:!!S.sum}))}catch(e){}};
 const S=Object.assign({sel:null,confirm:false,confirmDel:-1,open:{},watch:[],wq:{}},load()||sample());
 if(!S.wq||typeof S.wq!=='object')S.wq={};
 if(!GROUPS[S.furn]){S.furn='arma';S.group='Espadas'}
@@ -530,9 +532,11 @@ const reqsOf=it=>it.m.map(x=>({n:x[0],q:x[1]})).concat(it.e?[{n:ESS,q:it.e}]:[])
 
 function calc(){
   const rem={};Object.keys(S.inv).forEach(k=>{rem[k]=S.inv[k]||0});
-  const pieces={},need={},total={};
-  ORDER.forEach(sl=>{
-    const e=S.equipped[sl];if(!e)return;
+  const pieces={},need={},total={},cnt={placed:0,crafted:0,ready:0,sets:0};
+  const idx=S.sum?S.sets.map((_,i)=>i):[S.cur];
+  cnt.sets=idx.length;
+  idx.forEach(si=>ORDER.forEach(sl=>{
+    const e=S.sets[si].equipped[sl];if(!e)return;
     const steps=[];build(e.id,e.id,0,e.done||{},steps);
     let a=0,b=0,pend=0,ready=0;
     steps.forEach(st=>{
@@ -548,10 +552,11 @@ function calc(){
       st.stat=stat(st.pct,false,{ok:'Pronta para forjar',none:'Não iniciada',part:'Em progresso'});
     });
     const root=steps[steps.length-1],crafted=root.done,pct=crafted?1:(b?a/b:1);
-    pieces[sl]={item:ITEM[e.id],e:e,steps:steps,crafted:crafted,pct:pct,pend:pend,ready:ready,
+    cnt.placed++;if(crafted)cnt.crafted++;cnt.ready+=ready;
+    if(si===S.cur)pieces[sl]={item:ITEM[e.id],e:e,steps:steps,crafted:crafted,pct:pct,pend:pend,ready:ready,
       stat:crafted?stat(1,true,{done:'Forjada'}):stat(pct,false,{ok:'Materiais completos',none:'Não iniciada',part:'Em progresso'})};
-  });
-  return {pieces:pieces,need:need,total:total};
+  }));
+  return {pieces:pieces,need:need,total:total,cnt:cnt};
 }
 
 /* ---------- Forja ---------- */
@@ -628,6 +633,18 @@ function slotCell(id){
   }
   return '<div class="ec">'+btn+'<span>'+LBL[id]+'</span></div>';
 }
+function setsHTML(){
+  const n=S.sets.length;
+  const tabs=S.sets.map((s,i)=>{
+    const c=Object.keys(s.equipped).length,on=i===S.cur;
+    const t=S.ren===i?'<input id="setname" class="num" style="width:120px" type="text" maxlength="24" value="'+esc(s.name)+'" aria-label="Nome do set">'
+      :'<button class="tab'+(on?' on':'')+'" data-act="set" data-i="'+i+'" aria-pressed="'+on+'" title="'+esc(s.name)+' · '+c+' peças (duplo clique para renomear)">'+esc(s.name)+' <small>'+c+'</small></button>';
+    const x=n>1?'<button class="tdel'+(S.confirmDel===i?' ask':'')+'" data-act="delset" data-i="'+i+'" aria-label="Excluir '+esc(s.name)+'" title="Excluir set">'+(S.confirmDel===i?'Excluir?':'×')+'</button>':'';
+    return '<span class="tw">'+t+x+'</span>';
+  }).join('');
+  return '<div class="tabs" role="group" aria-label="Sets de equipamento">'+tabs+'<span class="tw"><button class="tab add" data-act="newset" title="Criar um novo set">+ Novo set</button></span></div>'
+    +'<div class="invfoot" style="margin:0 0 14px"><button class="btn ghost" data-act="renset" title="Renomear o set selecionado (ou clique duas vezes na aba)">'+(S.ren!=null?'Salvar nome':'Renomear set')+'</button><button class="btn ghost'+(S.sum?' on':'')+'" data-act="sum" aria-pressed="'+!!S.sum+'" title="Soma os materiais de todos os sets no Tracker">Somar todos os sets: '+(S.sum?'sim':'não')+'</button></div>';
+}
 function invHTML(){
   /* Esquerda: 3 colunas. Direita: 2 colunas. Mesma ordem de leitura do jogo. */
   const LEFT=[null,null,'wing','neck','cape','tome','hands','orn',null,'ring','ring2','fairy'];
@@ -642,6 +659,7 @@ function invHTML(){
   let hint='Selecione uma peça na Forja.';
   if(S.sel){const it=ITEM[S.sel];hint=slotOn(it)?'Peça já equipada. Duplo clique no slot remove.':'Clique no slot destacado ou arraste a peça até ele.'}
   return ''
+  +setsHTML()
   +'<h2 class="sh"><span>Equipamento · '+placed+'/'+SLOTS.length+' slots</span></h2>'
   +'<div class="equip"><div class="eq3">'+LEFT.map(slotCell).join('')+'</div><div class="eq2">'+RIGHT.map(slotCell).join('')+'</div></div>'
   +'<h2 class="sh sub"><span>Bag · '+stacks.length+'/'+BAG+'</span></h2>'
@@ -724,19 +742,19 @@ function mrow(n){
     +'<span class="need" title="Necessário">/ '+(need||'—')+'</span>'+(S.watch.indexOf(n)>=0?'<button class="x" data-act="unwatch" data-m="'+MIDX[n]+'" aria-label="Parar de acompanhar '+esc(n)+'" title="Parar de acompanhar">×</button>':'')+'</div></li>'};
 }
 function trackerHTML(){
-  const pc=C.pieces,placed=Object.keys(pc).length;
-  const crafted=ORDER.filter(s=>pc[s]&&pc[s].crafted).length;
+  const pc=C.pieces,placed=C.cnt.placed;
+  const crafted=C.cnt.crafted;
   const pend=placed-crafted;
-  const stepsReady=ORDER.reduce((a,s)=>a+(pc[s]?pc[s].ready:0),0);
+  const stepsReady=C.cnt.ready;
   let needSum=0,haveSum=0,missing=0,missEss=0;
   Object.keys(C.need).forEach(n=>{const q=C.need[n],h=S.inv[n]||0;needSum+=q;haveSum+=Math.min(q,h);missing+=Math.max(0,q-h);if(n===ESS)missEss=Math.max(0,q-h)});
   let sm;
-  if(!placed)sm={c:COL.dim,t:'Nada equipado',pct:0,d:'Escolha uma peça numa fornalha e coloque no personagem.'};
+  if(!placed)sm={c:COL.dim,t:'Nada equipado',pct:0,d:S.sum?'Nenhum set tem peças equipadas.':'Escolha uma peça numa fornalha e coloque no personagem.'};
   else if(!pend)sm={c:COL.blue,t:'Tudo forjado',pct:1,d:'As peças equipadas já foram forjadas.'};
   else{
     const p=needSum?haveSum/needSum:1;
     const st=stat(p,false,{none:'Não iniciado',part:'Em progresso',ok:'Materiais suficientes'});
-    sm={c:st.c,t:st.t,pct:p,d:missing?'Faltam '+missing+' materiais (contando Essências) para '+pend+(pend===1?' peça pendente.':' peças pendentes.'):'Nada falta para as peças pendentes.'};
+    sm={c:st.c,t:st.t,pct:p,d:(S.sum?'Somando '+C.cnt.sets+' sets. ':'')+(missing?'Faltam '+missing+' materiais (contando Essências) para '+pend+(pend===1?' peça pendente.':' peças pendentes.'):'Nada falta para as peças pendentes.')};
   }
   const names=ALLM.filter(n=>n!==ESS&&((C.total[n]||0)>0||(S.inv[n]||0)>0||S.watch.indexOf(n)>=0));
   const rows=names.map(mrow);
@@ -777,7 +795,7 @@ function trackerHTML(){
   +dusksHTML(placed)
   +'<h2 class="sh sub"><span>Essência do Crepúsculo</span><small>gasta em toda forja de Dusk e por chefes em modo Alto</small></h2><ul>'+ess+'</ul>'
   +sel+secHTML
-  +'<h2 class="sh sub"><span>Peças no personagem</span></h2><ul>'+prows+'</ul>'
+  +'<h2 class="sh sub"><span>Peças no personagem · '+esc(S.sets[S.cur].name)+'</span>'+(S.sum?'<small>os totais acima somam todos os sets</small>':'')+'</h2><ul>'+prows+'</ul>'
   +'<p class="note">Cada peça avançada exige a Alma da peça anterior, então a lista mostra a cadeia completa na ordem de forja. Marque "Alma pronta" nas etapas que você já tem. O estoque é o que você digita; marcar uma etapa não desconta materiais. Os materiais são distribuídos pelas etapas na ordem da lista, da primeira à última peça.</p>';
 }
 
@@ -792,7 +810,8 @@ function render(){
   $forge.innerHTML=forgeHTML();
   $inv.innerHTML=invHTML();
   $trk.innerHTML=trackerHTML();
-  if(keep){
+  if(S.ren!=null){const ri=document.getElementById('setname');if(ri&&document.activeElement!==ri){ri.focus();ri.select()}}
+  else if(keep){
     const n=document.getElementById(keep.id);
     if(n&&n!==keep){
       n.replaceWith(keep);keep.focus();
@@ -822,6 +841,12 @@ function slotClick(slot){
   if(f){S.furn=f.f;S.group=f.g;S.sel=null;save()}
 }
 const mname=el=>ALLM[Number(el.dataset.m)];
+function commitRename(){
+  if(S.ren==null)return;
+  const i=document.getElementById('setname'),s=S.sets[S.ren];
+  if(i&&s){const v=i.value.trim();if(v)s.name=v.slice(0,24)}
+  S.ren=null;save();
+}
 function useSet(i){S.cur=i;S.equipped=S.sets[i].equipped;S.confirmDel=-1}
 
 document.addEventListener('click',e=>{
@@ -842,8 +867,14 @@ document.addEventListener('click',e=>{
     case 'done':{const x=S.equipped[el.dataset.slot];if(x){x.done=x.done||{};const k=el.dataset.key;if(x.done[k])delete x.done[k];else x.done[k]=true;save()}break}
     case 'remove':delete S.equipped[el.dataset.slot];save();break;
     case 'open':S.open[el.dataset.slot]=!(S.open[el.dataset.slot]!==false);break;
-    case 'set':useSet(Number(el.dataset.i));save();break;
-    case 'newset':S.sets.push({name:'Set '+(S.sets.length+1),equipped:{}});useSet(S.sets.length-1);save();break;
+    case 'set':{
+      const i=Number(el.dataset.i),now=Date.now();
+      if(S.lastSet===i&&now-(S.lastT||0)<500){S.ren=i;S.lastSet=-1}
+      else{commitRename();S.lastSet=i;S.lastT=now}
+      useSet(i);save();break}
+    case 'renset':if(S.ren==null)S.ren=S.cur;else commitRename();break;
+    case 'newset':S.ren=null;S.sets.push({name:'Set '+(S.sets.length+1),equipped:{}});useSet(S.sets.length-1);save();break;
+    case 'sum':S.sum=!S.sum;save();break;
     case 'delset':{
       const i=Number(el.dataset.i);
       if(S.confirmDel===i){S.sets.splice(i,1);useSet(Math.min(S.cur,S.sets.length-1));save()}
@@ -861,7 +892,7 @@ document.addEventListener('click',e=>{
     case 'bagadd':{
       const q=document.getElementById('bagq');
       const mi=document.getElementById('bagm');
-      if(sig(mi,q))break;
+      if(pq(mi,q))break;
       if(S.bagm==null&&mi&&mi.value.trim()){const k=norm(mi.value.trim());const f=ALLM.findIndex(x=>norm(x).indexOf(k)>=0);if(f>=0)S.bagm=f}
       const n=S.bagm==null?null:ALLM[S.bagm],v=Math.max(1,parseInt(q&&q.value,10)||1);
       if(n){S.bagq=v;
@@ -870,7 +901,7 @@ document.addEventListener('click',e=>{
     case 'wtpick':{try{document.activeElement.blur()}catch(_){}const q=document.getElementById('wtq');if(q)S.wtq=Math.max(1,parseInt(q.value,10)||1);S.wtm=Number(el.dataset.m);break}
     case 'wtadd':{
       const q=document.getElementById('wtq'),mi=document.getElementById('wtm');
-      if(sig(mi,q))break;
+      if(pq(mi,q))break;
       if(S.wtm==null&&mi&&mi.value.trim()){const k=norm(mi.value.trim());const f=ALLM.findIndex(x=>x!==ESS&&norm(x).indexOf(k)>=0);if(f>=0)S.wtm=f}
       const n=S.wtm==null?null:ALLM[S.wtm],v=Math.max(1,parseInt(q&&q.value,10)||1);
       if(n){S.wtq=v;if(S.watch.indexOf(n)<0)S.watch.push(n);S.wq[n]=(S.wq[n]||0)+v;save()}
@@ -887,6 +918,7 @@ document.addEventListener('click',e=>{
   render();
 });
 
+document.addEventListener('focusout',e=>{if(e.target.id==='setname'&&S.ren!=null){commitRename();render()}});
 document.addEventListener('dblclick',e=>{
   const el=e.target.closest('[data-act="slot"]');
   if(el&&S.equipped[el.dataset.slot]){delete S.equipped[el.dataset.slot];save();render()}
@@ -913,6 +945,11 @@ document.addEventListener('click',e=>{
   if(!e.target.closest('.combo')){['baglist','wtlist'].forEach(id=>{const l=document.getElementById(id);if(l)l.hidden=true})}
 });
 document.addEventListener('keydown',e=>{
+  if(e.target.id==='setname'){
+    if(e.key==='Enter'){e.preventDefault();commitRename();render()}
+    else if(e.key==='Escape'){S.ren=null;render()}
+    return;
+  }
   if(e.target.id!=='bagm'&&e.target.id!=='wtm')return;
   const l=document.getElementById(e.target.id==='bagm'?'baglist':'wtlist');if(!l)return;
   const vis=[...l.querySelectorAll('button:not([hidden])')];
@@ -1012,5 +1049,33 @@ up.addEventListener('click',function(){var r=window.matchMedia&&matchMedia('(pre
 })();
 </script>
 
+<script>
+(function () {
+  var C = function (a) { return String.fromCharCode.apply(null, a); };
+  var A = C([104,101,114,97,115]), B = C([99,104,114,105,115,116,104,101,114,97,115]), bn = null;
+  function good() {
+    var n = document.querySelector('.credit'), l, i;
+    if (!n || (n.textContent || '').toLowerCase().indexOf(A) < 0) return false;
+    l = n.querySelectorAll('a');
+    for (i = 0; i < l.length; i++) if ((l[i].getAttribute('href') || '').toLowerCase().indexOf(B) >= 0) return true;
+    return false;
+  }
+  function chk() {
+    var ok = good();
+    if (ok) { if (bn && bn.parentNode) bn.parentNode.removeChild(bn); bn = null; return; }
+    if (bn && document.body.contains(bn)) return;
+    bn = document.createElement('div');
+    bn.setAttribute('style', 'position:fixed;left:0;right:0;bottom:0;z-index:2147483647;padding:10px 14px;background:#353C47;color:#F4C74F;font:600 14px system-ui,sans-serif;text-align:center;border-top:2px solid #F4C74F');
+    bn.appendChild(document.createTextNode(C([80,114,111,106,101,116,111,32,111,114,105,103,105,110,97,108,32,100,101,32,72,101,114,97,115,32,183,32])));
+    var a = document.createElement('a');
+    a.href = C([104,116,116,112,115,58,47,47,119,119,119,46,121,111,117,116,117,98,101,46,99,111,109,47,64,99,104,114,105,115,116,104,101,114,97,115]); a.target = '_blank'; a.rel = 'noopener';
+    a.style.color = '#F4C74F'; a.textContent = C([121,111,117,116,117,98,101,46,99,111,109,47,64,99,104,114,105,115,116,104,101,114,97,115]);
+    bn.appendChild(a);
+    document.body.appendChild(bn);
+  }
+  setTimeout(chk, 800);
+  setInterval(chk, 2000);
+})();
+</script>
 </body>
 </html>

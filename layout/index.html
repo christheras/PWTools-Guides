@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!--
+  PW Tools: guia de layout e atalhos (Perfect World)
+  Copyright (C) 2026 Heras (https://www.youtube.com/@christheras), feito junto com o Claude.
+
+  Este programa é software livre: você pode redistribuí-lo e/ou modificá-lo
+  sob os termos da Licença Pública Geral GNU, versão 3, publicada pela
+  Free Software Foundation.
+
+  Este programa é distribuído na esperança de que seja útil, mas SEM
+  NENHUMA GARANTIA; sem mesmo a garantia implícita de COMERCIALIZAÇÃO ou
+  ADEQUAÇÃO A UM PROPÓSITO PARTICULAR. Veja a Licença Pública Geral GNU
+  para mais detalhes: https://www.gnu.org/licenses/gpl-3.0.html
+  Código-fonte: https://github.com/christheras/PWTools-Guides
+-->
+<title>Guia de layout e atalhos · PW Tools</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+:root {
+  --bg: #0D1412; --surface: #151F1C; --surface2: #1A2623;
+  --fg: #E5EEEB; --muted: #98AAA4; --line: #28372F;
+  --accent: #4CC9A0; --on-accent: #06241A;
+  --t1: #B3C0C7; --t1bg: #212C31;
+  --t2: #5DD3AA; --t2bg: #12342A;
+  --t3: #86B8F2; --t3bg: #162A42;
+  --t4: #C4A3F2; --t4bg: #2A1D40;
+  --t5: #F2BA56; --t5bg: #3A2B0E;
+  --t6: #F29AAA; --t6bg: #41202A;
+  --t7: #E6A0DA; --t7bg: #3A1F36;
+  --dusk: #F2C53D; --dusk-bg: #3A2B0E; --on-dusk: #231A02;
+  --s-none: #EA4B50; --s-prog: #F0B429; --s-ok: #3FBF6F; --s-forged: #4AA3FF;
+  --font-display: 'Marcellus', 'Palatino Linotype', Georgia, serif;
+  --font-body: 'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-dusk: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
+  color-scheme: dark;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+:root[data-pw-theme="light"] {
+  --bg: #EDF1EF; --surface: #FFFFFF; --surface2: #F5F8F6;
+  --fg: #15211E; --muted: #4F5F5A; --line: #CFD9D5;
+  --accent: #0B6B55; --on-accent: #FFFFFF;
+  --t1: #4C5A62; --t1bg: #E3E8EB;
+  --t2: #0B6B55; --t2bg: #D8EFE6;
+  --t3: #1D58A3; --t3bg: #DCE9F8;
+  --t4: #6A3C9E; --t4bg: #EBE0F7;
+  --t5: #8A5200; --t5bg: #F8E8C6;
+  --t6: #A3243B; --t6bg: #F9DDE2;
+  --t7: #912C80; --t7bg: #F4DCF0;
+  --dusk: #7A5200; --dusk-bg: #F8E8C6; --on-dusk: #FFFFFF;
+  --s-none: #D8434A; --s-prog: #D9A21B; --s-ok: #2FA35C; --s-forged: #2F86E0;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: 70px; }
+body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.6;
+  padding-block: 76px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+code, .path { font-family: var(--font-mono); font-size: 13px; background: var(--surface2); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; overflow-wrap: anywhere; }
+.wrap { max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+.eyebrow { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.hero { display: flex; flex-direction: column; gap: 10px; }
+.hero h1 { font-size: clamp(32px, 6vw, 48px); line-height: 1.05; }
+.hero .lead { color: var(--muted); font-size: 16px; max-width: 62ch; }
+.toc { display: flex; flex-wrap: wrap; gap: 8px; }
+.toc a { text-decoration: none; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 99px; padding: 6px 14px; font-size: 13.5px; font-weight: 500; min-height: 36px; display: inline-flex; align-items: center; }
+.toc a:hover, .toc a:focus-visible { border-color: var(--accent); }
+.card { background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--accent); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 12px; }
+.card h2 { font-size: 26px; line-height: 1.15; }
+.card h3 { font-size: 18px; margin-top: 6px; }
+.card ol, .card ul { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+.muted { color: var(--muted); }
+.note { border-left: 4px solid var(--t5); background: var(--t5bg); color: var(--fg); border-radius: 0 10px 10px 0; padding: 12px 14px; font-size: 14px; }
+.note b { color: var(--t5); }
+.ok { border-left-color: var(--accent); background: var(--surface2); }
+.ok b { color: var(--accent); }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th, .tbl td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.tbl th { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.tw { overflow-x: auto; }
+.step { display: flex; gap: 12px; align-items: flex-start; }
+.step .n { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--on-accent); font-weight: 700; display: grid; place-items: center; font-size: 15px; }
+.step p { padding-top: 3px; }
+figure { margin: 0; }
+figure img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+figure.small img { max-width: 360px; }
+.check { display: flex; flex-direction: column; gap: 4px; }
+.check label { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface2); cursor: pointer; min-height: 44px; }
+.check input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--accent); flex: none; }
+.check input:checked + span { color: var(--muted); text-decoration: line-through; }
+.bar { height: 8px; border-radius: 99px; background: var(--surface2); border: 1px solid var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.btn { background: transparent; border: 1px solid var(--line); border-radius: 99px; padding: 8px 16px; min-height: 40px; font-weight: 600; font-size: 13.5px; }
+.btn:hover, .btn:focus-visible { border-color: var(--accent); }
+.credit { text-align: center; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 16px; }
+.credit a { color: var(--accent); font-weight: 600; display: inline-block; margin-top: 4px; }
+.credit .cp { display: block; margin-top: 6px; font-size: 12px; }
+.credit .cp a { margin-top: 0; font-weight: 500; }
+.credit b { font-family: var(--font-display); font-weight: 400; font-size: 18px; color: var(--accent); letter-spacing: .02em; }
+.switch { position: fixed; top: max(12px, env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); height: 40px; padding: 0 14px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; opacity: .9; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,.18); }
+.switch:hover, .switch:focus-visible { opacity: 1; border-color: var(--accent); }
+.switch .sa { color: var(--accent); font-size: 16px; line-height: 1; }
+.theme { position: fixed; top: max(12px, env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); height: 40px; min-width: 40px; padding: 0 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; opacity: .9; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,.18); }
+.theme:hover, .theme:focus-visible { opacity: 1; border-color: var(--accent); }
+.theme .ti { font-size: 17px; line-height: 1; }
+@media (max-width: 520px) { .theme .tl { display: none; } .theme { width: 40px; padding: 0; justify-content: center; } }
+.totop { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font-size: 20px; line-height: 1; display: grid; place-items: center; opacity: 0; pointer-events: none; z-index: 10; box-shadow: 0 2px 10px rgba(0,0,0,.18); }
+.totop.show { opacity: .5; pointer-events: auto; }
+.totop.show:hover, .totop.show:focus-visible { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) { .totop { transition: opacity .2s ease; } }
+</style>
+</head>
+<body>
+<a class="switch" href="../" aria-label="Voltar para a página inicial"><span class="sa" aria-hidden="true">&#8592;</span>Início</a>
+<button class="theme" id="theme" type="button"><span class="ti" aria-hidden="true"></span><span class="tl"></span></button>
+<button class="totop" id="totop" type="button" aria-label="Voltar ao topo">&#8593;</button>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Perfect World · Guia</p>
+    <h1>Layout e atalhos</h1>
+    <p class="lead">Use o mesmo layout de janelas e as mesmas teclas em todas as suas contas.</p>
+  </header>
+
+  <p class="note"><b>Antes:</b> feche o jogo. Faça uma cópia da pasta <code>Layout</code> como backup.</p>
+
+  <section class="card" id="layout">
+    <h2>Passo a passo</h2>
+    <div class="step"><span class="n">1</span><p>Entre numa conta, ajuste as janelas e os atalhos do jeito que quer e <b>feche o jogo</b>.</p></div>
+    <div class="step"><span class="n">2</span><p>Abra <code>userdata\Layout</code>. O jogo cria dois arquivos com o <b>ID do personagem</b>: um <code>.ini</code> (janelas) e um <code>.key</code> (atalhos).</p></div>
+    <figure><img src="pasta-layout.png" alt="Pasta Layout com o par de arquivos .ini e .key de um personagem destacado" width="1700" height="924"></figure>
+    <div class="step"><span class="n">3</span><p>Crie uma pasta (por exemplo, <code>Modelo</code>) e copie esses dois arquivos para ela.</p></div>
+    <div class="step"><span class="n">4</span><p>Para cada outra conta, copie os dois e <b>renomeie com o ID dela</b>, mantendo o <code>.ini</code> e o <code>.key</code>.</p></div>
+    <p class="muted">Exemplo: <code>20688.ini</code> vira <code>21728.ini</code>, e <code>20688.key</code> vira <code>21728.key</code>.</p>
+    <div class="step"><span class="n">5</span><p>Cole os arquivos renomeados em <code>Layout</code>, substituindo os antigos. Abra o jogo.</p></div>
+    <p class="note ok"><b>Resultado:</b> todas as contas abrem com as mesmas janelas e os mesmos atalhos.</p>
+  </section>
+
+  <footer class="credit">Feito por <b>Heras</b>, junto com o Claude.<br><a href="https://www.youtube.com/@christheras" target="_blank" rel="noopener">youtube.com/@christheras</a><span class="cp">© 2026 Heras · Software livre sob a <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GNU GPL v3</a> · <a href="https://github.com/christheras/LivroDivinoTracker" target="_blank" rel="noopener">Código-fonte</a></span><span class="cp">Marcas e imagens de Perfect World pertencem aos respectivos titulares. Projeto de fã, sem vínculo oficial com o jogo.</span></footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ===== PW Tools: tema compartilhado (padrão v4) =====
+     Copie este bloco IGUAL em toda página nova. A página precisa de:
+       1. <button id="theme"> com um <span aria-hidden="true"> (ícone) e um <span class="tl"> (texto);
+       2. CSS escuro no :root e as cores do tema claro em :root[data-pw-theme="light"].
+     O padrão é escuro. A escolha fica em localStorage na chave 'pw-tools-tema' ('dark' ou 'light'),
+     a mesma para todas as páginas do site. Não usa o endereço (#) da página. */
+  (function () {
+    var KEY = 'pw-tools-tema', TAG = 'pw-tools-tema:';
+    var root = document.documentElement, btn = document.getElementById('theme');
+    function ok(v) { return v === 'dark' || v === 'light' ? v : null; }
+    /* window.name é a reserva para quando o navegador bloqueia o localStorage */
+    function stored() {
+      try { var v = ok(localStorage.getItem(KEY)); if (v) return v; } catch (e) {}
+      try { if (window.name.indexOf(TAG) === 0) return ok(window.name.slice(TAG.length)); } catch (e) {}
+      return null;
+    }
+    function save(v) {
+      try { localStorage.setItem(KEY, v); } catch (e) {}
+      try { if (!window.name || window.name.indexOf(TAG) === 0) window.name = TAG + v; } catch (e) {}
+    }
+    var theme = stored() || 'dark';
+    function apply() {
+      var d = theme === 'dark';
+      root.setAttribute('data-pw-theme', theme);
+      if (!btn) return;
+      var ic = btn.querySelector('[aria-hidden]'), tl = btn.querySelector('.tl');
+      if (ic) ic.textContent = d ? '☀' : '☾';
+      if (tl) tl.textContent = d ? 'Tema claro' : 'Tema escuro';
+      btn.setAttribute('aria-label', d ? 'Mudar para o tema claro' : 'Mudar para o tema escuro');
+    }
+    apply();
+    if (btn) btn.addEventListener('click', function () {
+      theme = theme === 'dark' ? 'light' : 'dark';
+      save(theme);
+      apply();
+    });
+    function sync() { var s = stored() || 'dark'; if (s !== theme) { theme = s; apply(); } }
+    window.addEventListener('pageshow', sync);
+    window.addEventListener('storage', sync);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) sync(); });
+  })();
+  /* ===== fim do tema compartilhado ===== */
+
+  var topBtn = document.getElementById('totop');
+  window.addEventListener('scroll', function () { topBtn.classList.toggle('show', window.scrollY > 200); }, { passive: true });
+  topBtn.addEventListener('click', function () {
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  });
+})();
+</script>
+<script>
+(function () {
+  var C = function (a) { return String.fromCharCode.apply(null, a); };
+  var A = C([104,101,114,97,115]), B = C([99,104,114,105,115,116,104,101,114,97,115]), bn = null;
+  function good() {
+    var n = document.querySelector('.credit'), l, i;
+    if (!n || (n.textContent || '').toLowerCase().indexOf(A) < 0) return false;
+    l = n.querySelectorAll('a');
+    for (i = 0; i < l.length; i++) if ((l[i].getAttribute('href') || '').toLowerCase().indexOf(B) >= 0) return true;
+    return false;
+  }
+  function chk() {
+    var ok = good();
+    if (ok) { if (bn && bn.parentNode) bn.parentNode.removeChild(bn); bn = null; return; }
+    if (bn && document.body.contains(bn)) return;
+    bn = document.createElement('div');
+    bn.setAttribute('style', 'position:fixed;left:0;right:0;bottom:0;z-index:2147483647;padding:10px 14px;background:#353C47;color:#F4C74F;font:600 14px system-ui,sans-serif;text-align:center;border-top:2px solid #F4C74F');
+    bn.appendChild(document.createTextNode(C([80,114,111,106,101,116,111,32,111,114,105,103,105,110,97,108,32,100,101,32,72,101,114,97,115,32,183,32])));
+    var a = document.createElement('a');
+    a.href = C([104,116,116,112,115,58,47,47,119,119,119,46,121,111,117,116,117,98,101,46,99,111,109,47,64,99,104,114,105,115,116,104,101,114,97,115]); a.target = '_blank'; a.rel = 'noopener';
+    a.style.color = '#F4C74F'; a.textContent = C([121,111,117,116,117,98,101,46,99,111,109,47,64,99,104,114,105,115,116,104,101,114,97,115]);
+    bn.appendChild(a);
+    document.body.appendChild(bn);
+  }
+  setTimeout(chk, 800);
+  setInterval(chk, 2000);
+})();
+</script>
+</body>
+</html>

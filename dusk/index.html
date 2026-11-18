@@ -344,6 +344,26 @@ button.cell:hover{border-color:var(--accent-line)}
 #x7{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;pointer-events:none;background:rgba(0,0,0,.55)}
 #x7 span{font:700 clamp(56px,16vw,220px)/1 var(--font-head,'Chakra Petch',sans-serif);color:#f2c53d;text-shadow:0 0 30px rgba(242,197,61,.6);letter-spacing:.02em;animation:x7b 1s steps(1) infinite}
 @keyframes x7b{0%{opacity:1}50%{opacity:.08}}
+#tip{position:fixed;z-index:9000;left:0;top:0;max-width:330px;min-width:200px;padding:9px 12px 10px;background:rgba(8,12,22,.97);border:1px solid #5b6b85;border-radius:3px;box-shadow:0 6px 22px rgba(0,0,0,.6);color:#fff;font:500 13.5px/1.45 var(--font-body,system-ui,sans-serif);pointer-events:none;opacity:0;visibility:hidden}
+#tip.on{opacity:1;visibility:visible}
+#tip div{overflow-wrap:anywhere}
+#tip .tn{font-weight:700;font-size:15px}
+#tip .tb{color:#ff6000}
+#tip .ts{color:#8080ff}
+#tip .tg{color:#4cff9a}
+#tip .tc{color:#ffdc50;margin-top:6px}
+#tip .tm{color:#9aa3b2;font-size:12.5px;padding-left:10px}
+#tip .tm.ok{color:#ffdc50}
+#tip .th{color:#8d97a5;font-size:12px;margin-top:6px;border-top:1px solid #2b3447;padding-top:5px}
+#tip .tbn{color:#7d8696;padding-left:10px}
+#tip .tbn.on{color:#ffdc50;font-weight:600}
+.tr-green{color:#00ffae}.tr-gold{color:#ffdc50}.tr-red{color:#ff6000}
+.statb{color:#8080ff}.tcb{color:#ffdc50}
+:root[data-pw-theme="light"] .tr-green{color:#07805a}
+:root[data-pw-theme="light"] .tr-gold{color:#8a6a00}
+:root[data-pw-theme="light"] .tr-red{color:#c24400}
+:root[data-pw-theme="light"] .statb{color:#3a3ac6}
+:root[data-pw-theme="light"] .tcb{color:#8a6a00}
 </style>
 
 </head>
@@ -580,7 +600,7 @@ function forgeHTML(){
     const sel=S.sel===it.id,eqs=slotOn(it),on=!!eqs;
     const st=on?C.pieces[eqs].stat:null;
     const can=canForge(it);
-    return '<button class="tile'+(it.au?' gold':'')+(sel?' sel':'')+(on?' on':'')+(can?' can':'')+'" data-act="tile" data-id="'+it.id+'" draggable="true" style="--sc:'+tcol(it)+';--tc:'+TIERC(it)+(st?';--c:'+st.c:'')+'" title="'+esc(it.n)+' (Nv '+it.l+')'+(can?' · pode forjar':'')+' · duplo clique equipa" aria-label="'+esc(it.n)+', nível '+it.l+(on?', equipada':'')+(can?', materiais suficientes para forjar':'')+'" aria-pressed="'+sel+'">'+glyphOf(it)+(it.l?'<span class="lv">'+it.l+'</span>':'')+(on?'<i class="dot"></i>':'')+'</button>';
+    return '<button class="tile'+(it.au?' gold':'')+(sel?' sel':'')+(on?' on':'')+(can?' can':'')+'" data-act="tile" data-id="'+it.id+'" draggable="true" style="--sc:'+tcol(it)+';--tc:'+TIERC(it)+(st?';--c:'+st.c:'')+'" aria-label="'+esc(it.n)+', nível '+it.l+(on?', equipada':'')+(can?', materiais suficientes para forjar':'')+'" aria-pressed="'+sel+'">'+glyphOf(it)+(it.l?'<span class="lv">'+it.l+'</span>':'')+(on?'<i class="dot"></i>':'')+'</button>';
   }).join('');
   const sel=S.sel?ITEM[S.sel]:null;
   const blank='<div class="ms"><div class="msi"></div></div>';
@@ -613,8 +633,8 @@ function forgeHTML(){
   +'<div class="groups" role="group" aria-label="Categorias">'+GROUPS[S.furn].map(g=>'<button class="gp'+(g===S.group?' on':'')+'" data-act="group" data-g="'+esc(g)+'" aria-pressed="'+(g===S.group)+'">'+esc(g)+'</button>').join('')+'</div>'
   +'<div class="fgrid">'+cells+'</div>'
   +'<div class="fdetail">'
-  +'<div class="selname'+(sel?'':' none')+'">'+(sel?esc(sel.n)+' <small>'+(sel.nr?'SEM RECEITA':'NV '+sel.l+(sel.au?' · DOURADA':''))+'</small>':'Selecione uma peça na grade')+'</div>'
-  +(sel&&(typeTxt||sel.st)?'<p class="meta">'+esc(typeTxt)+(sel.st?(typeTxt?' · ':'')+esc(sel.st):'')+'</p>':'')
+  +'<div class="selname'+(sel?'':' none')+'">'+(sel?'<span class="'+tcls(sel)+'">'+esc(sel.n)+'</span> <small>'+(sel.nr?'SEM RECEITA':'NV '+sel.l+(tierOf(sel)==='gold'?' · DOURADA':tierOf(sel)==='red'?' · VERMELHA':''))+'</small>':'Selecione uma peça na grade')+'</div>'
+  +(sel&&(typeTxt||sel.st)?'<p class="meta">'+esc(typeTxt)+(cleanSt(sel)?(typeTxt?' · ':'')+'<span class="statb">'+esc(cleanSt(sel))+'</span>':'')+(sel.combo?' · <span class="tcb">'+esc(comboName(sel.combo))+'</span>':'')+'</p>':'')
   +(sel?'<div class="mslots">'+slots+'</div>':'')
   +(soulTxt?'<p class="souls">'+soulTxt+'</p>':'')
   +'<div class="acts"><button class="btn" data-act="equip"'+(sel&&!same&&!sel.nr?'':' disabled')+'>'+(same?'Equipada':'Equipar')+'</button><button class="btn ghost" data-act="cancel"'+(sel?'':' disabled')+'>Cancelar</button>'+'</div>'
@@ -630,7 +650,7 @@ function slotCell(id){
   let btn;
   if(e){
     const pc=C.pieces[id],it=pc.item;
-    btn='<button class="slot full'+(tgt?' target':'')+'" data-act="slot" data-slot="'+id+'" style="--sc:'+tcol(it)+';--c:'+pc.stat.c+'" title="'+esc(it.n)+' · '+pc.stat.t+' (duplo clique remove só este slot)" aria-label="'+esc(it.n)+', '+pc.stat.t+'">'+glyphOf(it)+(pc.crafted?'<i class="ck">'+CHECK+'</i>':'')+'</button>';
+    btn='<button class="slot full'+(tgt?' target':'')+'" data-act="slot" data-slot="'+id+'" style="--sc:'+tcol(it)+';--c:'+pc.stat.c+'" aria-label="'+esc(it.n)+', '+pc.stat.t+'">'+glyphOf(it)+(pc.crafted?'<i class="ck">'+CHECK+'</i>':'')+'</button>';
   }else{
     btn='<button class="slot'+(tgt?' target':'')+'" data-act="slot" data-slot="'+id+'" title="'+name+' (vazio)" aria-label="'+name+', vazio">'+svg(G[id==='weapon'?'sword':id==='ring2'?'ring':id])+'<i class="plus">+</i></button>';
   }
@@ -790,7 +810,7 @@ function trackerHTML(){
         +'<div class="sname">'+esc(st.item.n)+'<small>NV '+st.item.l+'</small><em>'+st.stat.t+'</em></div><div class="chips">'+chips+'</div></li>';
     }).join('')+'</ol>':'';
     return '<li class="piece" style="--c:'+p.stat.c+';--sc:'+tcol(it)+';--tc:'+TIERC(it)+'"><div class="phead"><span class="pic">'+glyphOf(it)+'</span>'
-      +'<div class="pmain"><div class="mtop"><b>'+esc(it.n)+'</b><span class="mnote">NV '+it.l+'</span><em>'+p.stat.t+'</em></div><div class="mnote">'+nm+' · '+p.steps.length+(p.steps.length===1?' etapa':' etapas')+(p.pend?' · '+p.pend+' a forjar':'')+'</div></div>'
+      +'<div class="pmain"><div class="mtop"><b class="'+tcls(it)+'">'+esc(it.n)+'</b><span class="mnote">NV '+it.l+'</span><em>'+p.stat.t+'</em></div><div class="mnote">'+nm+' · '+p.steps.length+(p.steps.length===1?' etapa':' etapas')+(p.pend?' · '+p.pend+' a forjar':'')+'</div></div>'
       +'<div class="pact">'+(p.steps.length>1?'<button class="xbtn" data-act="open" data-slot="'+sl+'" aria-label="'+(open?'Recolher':'Expandir')+' etapas" aria-expanded="'+open+'">'+(open?'−':'+')+'</button>':'')+'<button class="x" data-act="remove" data-slot="'+sl+'" aria-label="Remover '+esc(it.n)+'">×</button></div></div>'+stepsHTML+'</li>';
   }).join('');
   return ''
@@ -979,6 +999,83 @@ document.addEventListener('input',e=>{
   if(t.id==='wtm'){const l=document.getElementById('wtlist');if(l)l.hidden=false;bagFilter(false,'wt');return}
   if(t.dataset&&t.dataset.m!==undefined&&t.tagName==='INPUT'){S.inv[ALLM[Number(t.dataset.m)]]=Math.max(0,parseInt(t.value,10)||0);save();render()}
 });
+
+/* Dica ao passar o mouse: status, tier e combo do item */
+const STATN={'Def':'Defesa Física','Def Metal':'Defesa de Metal','Def Madeira':'Defesa de Madeira','Def Água':'Defesa de Água','Def Fogo':'Defesa de Fogo','Def Terra':'Defesa de Terra','For':'Força','Des':'Destreza','Con':'Constituição','Int':'Inteligência','Esq':'Esquiva','Eva':'Esquiva','Atq':'Ataque Físico','Max Atq':'Ataque Físico Máximo','AtqM':'Ataque Mágico','Max AtqM':'Ataque Mágico Máximo','Atq Mágico':'Ataque Mágico','Intervalo de Atq':'Intervalo de Ataque','Range':'Alcance','MP Recovery':'Recuperação de MP','Nível de Atq':'Nível de Ataque'};
+const COMBO_NAME={'Rei Leão':'Poder do Rei Leão','Rei Insano':'Poder do Rei Insano','Asura':'Poder do Asura','Sábio':'Poder do Sábio','Profeta':'Poder do Profeta','General Voador':'Poder do General Voador'};
+const COMBO_BONUS={
+  'Rei Leão':[[2,'Intervalo de Ataque -0.05 segundos'],[4,'Constituição +15'],[6,'Crítico +3%']],
+  'Asura':[[2,'Intervalo de Ataque -0.05 segundos'],[4,'Constituição +15'],[6,'Crítico +3%']],
+  'Sábio':[[2,'Tempo de Invocação -3%'],[4,'Constituição +15'],[6,'Crítico +3%']],
+  'Rei Insano':[[2,'Força +10'],[4,'Redução de Dano Físico +3%']],
+  'General Voador':[[2,'Destreza +10'],[4,'Redução de Dano Físico +3%']],
+  'Profeta':[[2,'Inteligência +10'],[4,'Redução de Dano Físico +3%']]
+};
+const comboName=k=>COMBO_NAME[k]||('Conjunto do '+k);
+const tcls=it=>'tr-'+tierOf(it);
+const cleanSt=it=>String(it.st||'').replace(/\[[^\]]*\]/g,'').replace(/\([^)]*\)/g,'').replace(/\s+/g,' ').replace(/\s*([,;])\s*$/,'').trim();
+const COMBOS={};
+ITEMS.forEach(i=>{const m=/\[Conjunto d[oa]s? ([^\]]+)\]/.exec(i.st||'');if(m){i.combo=m[1];(COMBOS[m[1]]=COMBOS[m[1]]||[]).push(i.id)}});
+const tierOf=it=>it.l>=100?'red':(it.au||it.combo)?'gold':'green';
+const TIP_COL={green:'#00ffae',gold:'#ffdc50',red:'#ff6000'};
+function statLines(it){
+  const raw=String(it.st||'').replace(/\[[^\]]*\]/g,'').replace(/\([^)]*\)/g,'');
+  return raw.split(/[;,]/).map(x=>x.trim()).filter(Boolean).map(x=>{
+    const m=x.match(/^(.*?)\s*([+-]?)\s*(\d[\d.,~]*%?)$/);
+    if(!m)return x;
+    return (STATN[m[1]]||m[1])+' '+(m[2]||'+')+m[3];
+  });
+}
+function typeLine(it){
+  if(it.f==='armadura'&&it.t.indexOf(' · ')>0){
+    const cls=it.t.split(' · ')[0],pn={body:'Armadura',legs:'Perneira',feet:'Bota',hands:'Bracelete'}[it.s];
+    if(pn){const masc=it.s==='hands',c=cls==='Pesada'?(masc?'Pesado':'Pesada'):cls==='Mágica'?(masc?'Mágico':'Mágica'):cls;return pn+' '+c}
+  }
+  return it.t;
+}
+function tipHTML(it,hint){
+  const tr=tierOf(it),bind=tr!=='green';
+  let h='<div class="tn" style="color:'+TIP_COL[tr]+'">'+(tr==='red'?'★★':'★')+esc(it.n)+'</div>';
+  if(bind)h+='<div class="tb">Equipamento - Adere à Alma</div>';
+  h+='<div>'+esc(typeLine(it))+'</div><div>Nível Necessário: '+it.l+'</div>';
+  statLines(it).forEach(s=>{h+='<div class="ts">'+esc(s)+'</div>'});
+  if(it.combo){
+    const mem=COMBOS[it.combo],nm=comboName(it.combo);
+    const eqd=mem.filter(id=>Object.keys(S.equipped).some(k=>S.equipped[k].id===id));
+    h+='<div class="tc">'+esc(nm)+' ('+mem.length+') · '+eqd.length+'/'+mem.length+' equipadas</div>';
+    mem.forEach(id=>{const on=eqd.indexOf(id)>=0;h+='<div class="tm'+(on?' ok':'')+'">'+(on?'✓ ':'· ')+esc(ITEM[id].n)+'</div>'});
+    const bn=COMBO_BONUS[it.combo];
+    if(bn)bn.forEach(b=>{const on=eqd.length>=b[0];h+='<div class="tbn'+(on?' on':'')+'">'+(on?'✓ ':'')+'('+b[0]+') '+esc(b[1])+'</div>'});
+    else h+='<div class="tm">Bônus do conjunto ainda não cadastrado.</div>';
+  }
+  if(hint)h+='<div class="th">'+hint+'</div>';
+  return h;
+}
+const tipEl=document.createElement('div');tipEl.id='tip';tipEl.setAttribute('role','tooltip');document.body.appendChild(tipEl);
+let tipKey=null;
+function tipTarget(e){
+  const t=e.target&&e.target.closest&&e.target.closest('[data-act="tile"],.slot.full[data-slot]');
+  if(!t)return null;
+  if(t.dataset.act==='tile'){const it=ITEM[t.dataset.id];return it?{it:it,hint:'Duplo clique: equipar'+(canForge(it)?' · materiais completos':'')}:null}
+  const e2=S.equipped[t.dataset.slot],it=e2&&ITEM[e2.id];
+  return it?{it:it,hint:'Duplo clique: limpar este slot'}:null;
+}
+function tipMove(e){
+  const g=tipTarget(e);
+  if(!g){tipEl.classList.remove('on');tipKey=null;return}
+  const key=g.it.id+'|'+g.hint+'|'+Object.keys(S.equipped).length;
+  if(key!==tipKey){tipEl.innerHTML=tipHTML(g.it,g.hint);tipKey=key}
+  tipEl.classList.add('on');
+  const w=tipEl.offsetWidth,hh=tipEl.offsetHeight;
+  let x=e.clientX+16,y=e.clientY+16;
+  if(x+w+8>innerWidth)x=Math.max(8,e.clientX-w-16);
+  if(y+hh+8>innerHeight)y=Math.max(8,innerHeight-hh-8);
+  tipEl.style.left=x+'px';tipEl.style.top=y+'px';
+}
+document.addEventListener('mousemove',tipMove);
+document.addEventListener('mouseleave',()=>{tipEl.classList.remove('on');tipKey=null});
+document.addEventListener('dragstart',()=>{tipEl.classList.remove('on');tipKey=null});
+window.addEventListener('scroll',()=>{tipEl.classList.remove('on');tipKey=null},{passive:true,capture:true});
 
 /* Arrastar da Forja para o personagem */
 document.addEventListener('dragstart',e=>{

@@ -207,9 +207,15 @@ button.cell:hover{border-color:var(--accent-line)}
 .clist .cq{font:600 11px var(--font-mono);color:var(--ink-dim)}
 .clist .cnone{padding:8px;color:var(--ink-dim);font-size:12.5px}
 .bagadd input{width:72px;height:28px;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:0 8px;font-size:13px;color:inherit}
-.tile.can::after{content:"";position:absolute;inset:-1px;border-radius:2px;pointer-events:none;border:2px solid #4aa3ff;background:rgba(74,163,255,.22);box-shadow:0 0 10px 2px rgba(74,163,255,.75),inset 0 0 8px rgba(74,163,255,.6);animation:canpulse 3.2s ease-in-out infinite}
+.tile.can::after{content:"";position:absolute;inset:-1px;border-radius:2px;pointer-events:none;border:2px solid #ffe600;background:rgba(255,230,0,.22);box-shadow:0 0 10px 2px rgba(255,230,0,.8),inset 0 0 8px rgba(255,230,0,.6);animation:canpulse 3.2s ease-in-out infinite}
+.tile.ch::before{content:"";position:absolute;inset:-1px;border-radius:2px;pointer-events:none;z-index:1;border:2px solid var(--cc);background:color-mix(in srgb,var(--cc) 26%,transparent);box-shadow:0 0 10px 2px var(--cc),inset 0 0 8px var(--cc);animation:canpulse 3.2s ease-in-out infinite}
+.tab.chn,.gp.chn{border-bottom-color:var(--cc);animation:chnb 3.2s ease-in-out infinite}
+@keyframes chnb{0%,100%{border-bottom-color:transparent}50%{border-bottom-color:var(--cc)}}
+.cell.mat::after{content:"";position:absolute;inset:0;pointer-events:none;border:2px solid #ffe600;background:rgba(255,230,0,.24);box-shadow:inset 0 0 8px rgba(255,230,0,.7);animation:canpulse 3.2s ease-in-out infinite}
+.ms.ch .msi{outline:2px solid var(--cc);outline-offset:1px;animation:chnb2 3.2s ease-in-out infinite}
+@keyframes chnb2{0%,100%{outline-color:transparent}50%{outline-color:var(--cc)}}
 @keyframes canpulse{0%,100%{opacity:.1}50%{opacity:1}}
-@media (prefers-reduced-motion:reduce){.tile.can::after{animation:none;opacity:.85}}
+@media (prefers-reduced-motion:reduce){.tile.can::after,.tile.ch::before,.cell.mat::after{animation:none;opacity:.85}.tab.chn,.gp.chn{animation:none}.ms.ch .msi{animation:none}}
 .invfoot{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px}
 .hint{color:var(--ink-dim);font-size:12.5px;flex:1;min-width:150px}
 
@@ -364,6 +370,8 @@ button.cell:hover{border-color:var(--accent-line)}
 :root[data-pw-theme="light"] .tr-red{color:#c24400}
 :root[data-pw-theme="light"] .statb{color:#3a3ac6}
 :root[data-pw-theme="light"] .tcb{color:#8a6a00}
+.buffd{margin:0;font-size:12.5px;line-height:1.45;color:#8080ff}.buffd b{font-weight:600}
+:root[data-pw-theme="light"] .buffd{color:#3a3ac6}
 </style>
 
 </head>
@@ -590,9 +598,18 @@ function canForge(it){
   if(!it.m.length&&!it.e)return false;
   return it.m.every(x=>(S.inv[x[0]]||0)>=x[1])&&(!it.e||(S.inv[ESS]||0)>=it.e);
 }
+const LVC=['#d6dbe2','#3ddc6b','#4aa3ff','#b56cff','#ff8a1f'];
+const chainCol=l=>l>=99?LVC[4]:LVC[Math.max(0,Math.min(3,Math.floor((l-60)/10)))];
+function chainOf(it){
+  const out={},st=[it];
+  while(st.length){const x=st.pop();(x.so||[]).forEach(id=>{const s=ITEM[id];if(s&&!out[id]&&s!==it){out[id]=s;st.push(s)}})}
+  return out;
+}
 function forgeHTML(){
   const fu=FURN.find(f=>f.id===S.furn);
   const list=ITEMS.filter(i=>i.f===S.furn&&i.g===S.group);
+  const selIt=S.sel?ITEM[S.sel]:null,chain=selIt?chainOf(selIt):{},chl=Object.keys(chain).map(k=>chain[k]);
+  const chMax=arr=>arr.reduce((m,x)=>Math.max(m,x.l),0);
   const bypos={};list.forEach((x,i)=>{bypos[x.p!=null?x.p:i]=x});
   const cells=Array.from({length:32},(_,i)=>{
     const it=bypos[i];
@@ -600,7 +617,7 @@ function forgeHTML(){
     const sel=S.sel===it.id,eqs=slotOn(it),on=!!eqs;
     const st=on?C.pieces[eqs].stat:null;
     const can=canForge(it);
-    return '<button class="tile'+(it.au?' gold':'')+(sel?' sel':'')+(on?' on':'')+(can?' can':'')+'" data-act="tile" data-id="'+it.id+'" draggable="true" style="--sc:'+tcol(it)+';--tc:'+TIERC(it)+(st?';--c:'+st.c:'')+'" aria-label="'+esc(it.n)+', nível '+it.l+(on?', equipada':'')+(can?', materiais suficientes para forjar':'')+'" aria-pressed="'+sel+'">'+glyphOf(it)+(it.l?'<span class="lv">'+it.l+'</span>':'')+(on?'<i class="dot"></i>':'')+'</button>';
+    return '<button class="tile'+(it.au?' gold':'')+(sel?' sel':'')+(on?' on':'')+(can?' can':'')+(chain[it.id]?' ch':'')+'" data-act="tile" data-id="'+it.id+'" draggable="true" style="--sc:'+tcol(it)+';--tc:'+TIERC(it)+(chain[it.id]?';--cc:'+chainCol(it.l):'')+(st?';--c:'+st.c:'')+'" aria-label="'+esc(it.n)+', nível '+it.l+(on?', equipada':'')+(can?', materiais suficientes para forjar':'')+'" aria-pressed="'+sel+'">'+glyphOf(it)+(it.l?'<span class="lv">'+it.l+'</span>':'')+(on?'<i class="dot"></i>':'')+'</button>';
   }).join('');
   const sel=S.sel?ITEM[S.sel]:null;
   const blank='<div class="ms"><div class="msi"></div></div>';
@@ -615,7 +632,7 @@ function forgeHTML(){
     sel.so.forEach((sid,i)=>{
       const s=ITEM[sid];let c='';
       if(isEq){const key=sel.id+'>'+i+':'+sid;if((eq.done||{})[key])c=' style="--c:'+COL.blue+'"'}
-      parts.push('<div class="ms" title="Alma: '+esc(s.n)+'"><div class="msi">'+tileOf(s)+'</div><div class="msn"'+c+'>1</div><div class="mst">Alma<br>'+esc(s.n)+'</div></div>');
+      parts.push('<div class="ms ch" style="--cc:'+chainCol(s.l)+'" title="Alma: '+esc(s.n)+'"><div class="msi">'+tileOf(s)+'</div><div class="msn"'+c+'>1</div><div class="mst">Alma<br>'+esc(s.n)+'</div></div>');
     });
     if(sel.e){
       const have=S.inv[ESS]||0,st=stat(Math.min(have/sel.e,1),false);
@@ -629,12 +646,13 @@ function forgeHTML(){
   const typeTxt=sel?[sel.g,sel.t&&sel.t!==sel.g?sel.t:''].filter(Boolean).join(' · '):'';
   return ''
   +'<h2 class="sh"><span>Forja · '+fu.full+' · '+list.length+' peças</span></h2>'
-  +'<div class="tabs" role="group" aria-label="Fornalhas">'+FURN.map(f=>'<span class="tw"><button class="tab'+(f.id===S.furn?' on':'')+'" data-act="furn" data-id="'+f.id+'" aria-pressed="'+(f.id===S.furn)+'">'+f.name+'</button></span>').join('')+'</div>'
-  +'<div class="groups" role="group" aria-label="Categorias">'+GROUPS[S.furn].map(g=>'<button class="gp'+(g===S.group?' on':'')+'" data-act="group" data-g="'+esc(g)+'" aria-pressed="'+(g===S.group)+'">'+esc(g)+'</button>').join('')+'</div>'
+  +'<div class="tabs" role="group" aria-label="Fornalhas">'+FURN.map(f=>{const cf=chl.filter(x=>x.f===f.id);return '<span class="tw"><button class="tab'+(f.id===S.furn?' on':'')+(cf.length?' chn':'')+'"'+(cf.length?' style="--cc:'+chainCol(chMax(cf))+'"':'')+' data-act="furn" data-id="'+f.id+'" aria-pressed="'+(f.id===S.furn)+'">'+f.name+'</button></span>'}).join('')+'</div>'
+  +'<div class="groups" role="group" aria-label="Categorias">'+GROUPS[S.furn].map(g=>{const cg=chl.filter(x=>x.f===S.furn&&x.g===g);return '<button class="gp'+(g===S.group?' on':'')+(cg.length?' chn':'')+'"'+(cg.length?' style="--cc:'+chainCol(chMax(cg))+'"':'')+' data-act="group" data-g="'+esc(g)+'" aria-pressed="'+(g===S.group)+'">'+esc(g)+'</button>'}).join('')+'</div>'
   +'<div class="fgrid">'+cells+'</div>'
   +'<div class="fdetail">'
   +'<div class="selname'+(sel?'':' none')+'">'+(sel?'<span class="'+tcls(sel)+'">'+esc(sel.n)+'</span> <small>'+(sel.nr?'SEM RECEITA':'NV '+sel.l+(tierOf(sel)==='gold'?' · DOURADA':tierOf(sel)==='red'?' · VERMELHA':''))+'</small>':'Selecione uma peça na grade')+'</div>'
   +(sel&&(typeTxt||sel.st)?'<p class="meta">'+esc(typeTxt)+(cleanSt(sel)?(typeTxt?' · ':'')+'<span class="statb">'+esc(cleanSt(sel))+'</span>':'')+(sel.combo?' · <span class="tcb">'+esc(comboName(sel.combo))+'</span>':'')+'</p>':'')
+  +(sel?buffsOf(sel).filter(b=>b.d).map(b=>'<p class="buffd"><b>'+esc(b.n)+':</b> '+esc(b.d)+'</p>').join(''):'')
   +(sel?'<div class="mslots">'+slots+'</div>':'')
   +(soulTxt?'<p class="souls">'+soulTxt+'</p>':'')
   +'<div class="acts"><button class="btn" data-act="equip"'+(sel&&!same&&!sel.nr?'':' disabled')+'>'+(same?'Equipada':'Equipar')+'</button><button class="btn ghost" data-act="cancel"'+(sel?'':' disabled')+'>Cancelar</button>'+'</div>'
@@ -674,10 +692,12 @@ function invHTML(){
   const RIGHT=['head',null,'body',null,'legs','weapon','feet',null];
   const placed=Object.keys(S.equipped).length;
   const stacks=ALLM.filter(n=>(S.inv[n]||0)>0);
+  const matNeed={},ssel=S.sel?ITEM[S.sel]:null;
+  if(ssel&&canForge(ssel)){ssel.m.forEach(x=>{matNeed[x[0]]=1});if(ssel.e)matNeed[ESS]=1}
   const cells=Array.from({length:BAG},(_,i)=>{
     const n=stacks[i];
     if(!n)return '<div class="cell"></div>';
-    return '<button class="cell" data-act="stack" data-m="'+MIDX[n]+'" title="'+esc(n)+' · '+S.inv[n]+'" aria-label="'+esc(n)+', '+S.inv[n]+'">'+matIcon(n)+'<span class="qn">'+S.inv[n]+'</span></button>';
+    return '<button class="cell'+(matNeed[n]?' mat':'')+'" data-act="stack" data-m="'+MIDX[n]+'" title="'+esc(n)+' · '+S.inv[n]+'" aria-label="'+esc(n)+', '+S.inv[n]+'">'+matIcon(n)+'<span class="qn">'+S.inv[n]+'</span></button>';
   }).join('');
   let hint='Selecione uma peça na Forja.';
   if(S.sel){const it=ITEM[S.sel];hint=slotOn(it)?'Peça já equipada. Duplo clique no slot remove.':'Clique no slot destacado ou arraste a peça até ele.'}
@@ -685,9 +705,9 @@ function invHTML(){
   +setsHTML()
   +'<h2 class="sh"><span>Equipamento · '+placed+'/'+SLOTS.length+' slots</span></h2>'
   +'<div class="equip"><div class="eq3">'+LEFT.map(slotCell).join('')+'</div><div class="eq2">'+RIGHT.map(slotCell).join('')+'</div></div>'
-  +'<h2 class="sh sub"><span>Bag · '+stacks.length+'/'+BAG+'</span></h2>'
+  +'<h2 class="sh sub"><span>Inventário · '+stacks.length+'/'+BAG+'</span></h2>'
   +'<div class="bag">'+cells+'</div>'
-  +'<div class="bagadd"><div class="combo"><span class="cico'+(S.bagm==null?' none':'')+'">'+(S.bagm==null?'&#8981;':matIcon(ALLM[S.bagm]))+'</span><input id="bagm" type="text" autocomplete="off" spellcheck="false" placeholder="Pesquisar item…" value="'+(S.bagm==null?'':esc(ALLM[S.bagm]))+'" aria-label="Material para adicionar à bag"><div class="clist" id="baglist" hidden>'+ALLM.map((n,i)=>'<button type="button" data-act="bagpick" data-m="'+i+'" data-k="'+esc(norm(n))+'"><span class="ci">'+matIcon(n)+'</span><span class="cn">'+esc(n)+'</span>'+((S.inv[n]||0)>0?'<span class="cq">×'+S.inv[n]+'</span>':'')+'</button>').join('')+'<div class="cnone" hidden>Nenhum material encontrado.</div></div></div><input id="bagq" type="number" min="1" inputmode="numeric" value="'+(S.bagq||1)+'" aria-label="Quantidade"><button class="btn sm" data-act="bagadd"'+''+'>Adicionar</button></div>'
+  +'<div class="bagadd"><div class="combo"><span class="cico'+(S.bagm==null?' none':'')+'">'+(S.bagm==null?'&#8981;':matIcon(ALLM[S.bagm]))+'</span><input id="bagm" type="text" autocomplete="off" spellcheck="false" placeholder="Pesquisar item…" value="'+(S.bagm==null?'':esc(ALLM[S.bagm]))+'" aria-label="Material para adicionar ao inventário"><div class="clist" id="baglist" hidden>'+ALLM.map((n,i)=>'<button type="button" data-act="bagpick" data-m="'+i+'" data-k="'+esc(norm(n))+'"><span class="ci">'+matIcon(n)+'</span><span class="cn">'+esc(n)+'</span>'+((S.inv[n]||0)>0?'<span class="cq">×'+S.inv[n]+'</span>':'')+'</button>').join('')+'<div class="cnone" hidden>Nenhum material encontrado.</div></div></div><input id="bagq" type="number" min="1" inputmode="numeric" value="'+(S.bagq||1)+'" aria-label="Quantidade"><button class="btn sm" data-act="bagadd"'+''+'>Adicionar</button></div>'
   +'<div class="invfoot"><button class="btn ghost" data-act="clear"'+(placed?'':' disabled')+'>'+(S.confirm?'Confirmar limpeza?':'Limpar peças')+'</button><button class="btn ghost" data-act="clearbag"'+(stacks.length?'':' disabled')+'>'+(S.confirmBag?'Confirmar limpeza?':'Limpar materiais')+'</button><span class="hint">'+hint+'</span></div>';
 }
 
@@ -1016,13 +1036,43 @@ const tcls=it=>'tr-'+tierOf(it);
 const cleanSt=it=>String(it.st||'').replace(/\[[^\]]*\]/g,'').replace(/\([^)]*\)/g,'').replace(/\s+/g,' ').replace(/\s*([,;])\s*$/,'').trim();
 const COMBOS={};
 ITEMS.forEach(i=>{const m=/\[Conjunto d[oa]s? ([^\]]+)\]/.exec(i.st||'');if(m){i.combo=m[1];(COMBOS[m[1]]=COMBOS[m[1]]||[]).push(i.id)}});
-const tierOf=it=>it.l>=100?'red':(it.au||it.combo)?'gold':'green';
+const tierOf=it=>it.l>=100?'red':(it.au||it.combo||it.m.some(x=>rar(x[0])==='d'))?'gold':'green';
 const TIP_COL={green:'#00ffae',gold:'#ffdc50',red:'#ff6000'};
+const BUFF={
+ 'Insanidade':'Tem a chance de causar dano duplo ao custo de 5% de HP máximo.',
+ 'Estilhaçar':'Reduz a defesa física do alvo.',
+ 'Desajeitado':'Reduz a esquiva do alvo.',
+ 'Enfraquecer':'Reduz a defesa mágica do alvo.',
+ 'Armadura Partida':'Aumenta sua defesa física e repete 25% do dano corporal.',
+ 'Sorte':'Aumenta o poder de ataque físico e a defesa física.',
+ 'Fé':'Recupera 5% de HP e dissipa maldições.',
+ 'Partir Espírito':'Dissipa todas as bênçãos do alvo.',
+ 'KO':'Alvo derrubado por 3 segundos.',
+ 'Parar':'Imobiliza o oponente por 3 segundos.',
+ 'Desespero':'Causa 5 segundos de stun no alvo, mas você fica paralisado por 10 segundos.',
+ 'Espírito em Chamas':'Recupera 10% de MP.',
+ 'Convicção':'Recupera 5% de HP e aumenta sua própria defesa física e mágica.',
+ 'Agilidade':'Aumenta sua velocidade de ataque.',
+ 'Certeiro':'Aumenta seus acertos.',
+ 'Tenacidade':'Aumenta sua defesa física.',
+ 'Regenerar':'Recupera 5% de HP.',
+ 'Vingança':'Recupera 5% de HP e aumenta o poder de ataque físico.',
+ 'Provocar':'Força os inimigos a atacarem você.',
+ 'Fúria':'Você entra em um estado de loucura, dobrando o poder e a velocidade de ataque, mas sofrendo mais dano.',
+ 'Escudo Místico':'Cria um escudo místico, reduzindo todo dano sofrido em 20%.',
+ 'Meditação':'Recupera 5% de HP e MP.',
+ 'Sombrio':'Aumenta muito o poder de ataque físico com a perda de 5% de MP.',
+ 'Manter Posição':'Aumenta muito o poder de ataque físico, mas reduz a defesa física.'
+};
+function buffsOf(it){
+  const raw=String(it.st||'').replace(/\[[^\]]*\]/g,'').replace(/\([^)]*\)/g,'');
+  return raw.split(/[;,]/).map(x=>x.trim()).filter(x=>/\*$/.test(x)).map(x=>{const n=x.replace(/\*$/,'').trim();return {n:n,d:BUFF[n]||''}});
+}
 function statLines(it){
   const raw=String(it.st||'').replace(/\[[^\]]*\]/g,'').replace(/\([^)]*\)/g,'');
   return raw.split(/[;,]/).map(x=>x.trim()).filter(Boolean).map(x=>{
     const m=x.match(/^(.*?)\s*([+-]?)\s*(\d[\d.,~]*%?)$/);
-    if(!m)return x;
+    if(!m){const b=/^(.*?)\*$/.exec(x);return b&&BUFF[b[1].trim()]?b[1].trim()+': '+BUFF[b[1].trim()]:x}
     return (STATN[m[1]]||m[1])+' '+(m[2]||'+')+m[3];
   });
 }

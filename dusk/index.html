@@ -255,6 +255,9 @@ button.cell:hover{border-color:var(--accent-line)}
 .dk.req{background:var(--cc);border-color:var(--cc);color:#12151a;box-shadow:0 0 0 2px color-mix(in srgb,var(--cc) 30%,transparent)}
 .dk.req span{color:#12151a;font-weight:600}
 .dk.sug{border:2px dashed var(--cc);color:color-mix(in srgb,var(--cc) var(--cmix),black)}
+.sh .dkall{margin-left:auto;align-self:center;color:var(--ink)}
+.sh .dkall.on{border-color:var(--t1);color:var(--t1)}
+.sh .dkall[disabled]{opacity:.7}
 .dkline{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-top:10px;font-size:14px}
 .dkline .lab{font:600 12px var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--t1)}
 .dkline b{font:700 14px var(--font-mono);padding:2px 9px;border-radius:4px}
@@ -475,7 +478,7 @@ const load=()=>{try{
   const o=JSON.parse(localStorage.getItem('dusk-tracker-v2'));
   if(o&&o.equipped&&o.inv&&o.furn)return {furn:o.furn,group:o.group,inv:o.inv,watch:o.watch||[],cur:0,sets:[{name:'Principal',equipped:o.equipped},{name:'Secundário',equipped:{}}]};
 }catch(e){}return null};
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({furn:S.furn,group:S.group,sets:S.sets,cur:S.cur,inv:S.inv,watch:S.watch,wq:S.wq,sum:!!S.sum}))}catch(e){}};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({furn:S.furn,group:S.group,sets:S.sets,cur:S.cur,inv:S.inv,watch:S.watch,wq:S.wq,sum:!!S.sum,dkAll:!!S.dkAll}))}catch(e){}};
 const S=Object.assign({sel:null,confirm:false,confirmDel:-1,open:{},watch:[],wq:{}},load()||sample());
 if(!S.wq||typeof S.wq!=='object')S.wq={};
 if(!GROUPS[S.furn]){S.furn='arma';S.group='Espadas'}
@@ -530,10 +533,10 @@ const stat=(pct,done,L)=>{
 const ORDER=['weapon','head','body','legs','feet','hands','cape','neck','orn','ring','ring2'];
 const reqsOf=it=>it.m.map(x=>({n:x[0],q:x[1]})).concat(it.e?[{n:ESS,q:it.e}]:[]);
 
-function calc(){
+function calc(all){
   const rem={};Object.keys(S.inv).forEach(k=>{rem[k]=S.inv[k]||0});
   const pieces={},need={},total={},cnt={placed:0,crafted:0,ready:0,sets:0};
-  const idx=S.sum?S.sets.map((_,i)=>i):[S.cur];
+  const idx=(S.sum||all)?S.sets.map((_,i)=>i):[S.cur];
   cnt.sets=idx.length;
   idx.forEach(si=>ORDER.forEach(sl=>{
     const e=S.sets[si].equipped[sl];if(!e)return;
@@ -577,7 +580,7 @@ function forgeHTML(){
     const sel=S.sel===it.id,eqs=slotOn(it),on=!!eqs;
     const st=on?C.pieces[eqs].stat:null;
     const can=canForge(it);
-    return '<button class="tile'+(it.au?' gold':'')+(sel?' sel':'')+(on?' on':'')+(can?' can':'')+'" data-act="tile" data-id="'+it.id+'" draggable="true" style="--sc:'+tcol(it)+';--tc:'+TIERC(it)+(st?';--c:'+st.c:'')+'" title="'+esc(it.n)+' (Nv '+it.l+')'+(can?' · pode forjar':'')+'" aria-label="'+esc(it.n)+', nível '+it.l+(on?', equipada':'')+(can?', materiais suficientes para forjar':'')+'" aria-pressed="'+sel+'">'+glyphOf(it)+(it.l?'<span class="lv">'+it.l+'</span>':'')+(on?'<i class="dot"></i>':'')+'</button>';
+    return '<button class="tile'+(it.au?' gold':'')+(sel?' sel':'')+(on?' on':'')+(can?' can':'')+'" data-act="tile" data-id="'+it.id+'" draggable="true" style="--sc:'+tcol(it)+';--tc:'+TIERC(it)+(st?';--c:'+st.c:'')+'" title="'+esc(it.n)+' (Nv '+it.l+')'+(can?' · pode forjar':'')+' · duplo clique equipa" aria-label="'+esc(it.n)+', nível '+it.l+(on?', equipada':'')+(can?', materiais suficientes para forjar':'')+'" aria-pressed="'+sel+'">'+glyphOf(it)+(it.l?'<span class="lv">'+it.l+'</span>':'')+(on?'<i class="dot"></i>':'')+'</button>';
   }).join('');
   const sel=S.sel?ITEM[S.sel]:null;
   const blank='<div class="ms"><div class="msi"></div></div>';
@@ -627,7 +630,7 @@ function slotCell(id){
   let btn;
   if(e){
     const pc=C.pieces[id],it=pc.item;
-    btn='<button class="slot full'+(tgt?' target':'')+'" data-act="slot" data-slot="'+id+'" style="--sc:'+tcol(it)+';--c:'+pc.stat.c+'" title="'+esc(it.n)+' · '+pc.stat.t+' (duplo clique remove)" aria-label="'+esc(it.n)+', '+pc.stat.t+'">'+glyphOf(it)+(pc.crafted?'<i class="ck">'+CHECK+'</i>':'')+'</button>';
+    btn='<button class="slot full'+(tgt?' target':'')+'" data-act="slot" data-slot="'+id+'" style="--sc:'+tcol(it)+';--c:'+pc.stat.c+'" title="'+esc(it.n)+' · '+pc.stat.t+' (duplo clique remove só este slot)" aria-label="'+esc(it.n)+', '+pc.stat.t+'">'+glyphOf(it)+(pc.crafted?'<i class="ck">'+CHECK+'</i>':'')+'</button>';
   }else{
     btn='<button class="slot'+(tgt?' target':'')+'" data-act="slot" data-slot="'+id+'" title="'+name+' (vazio)" aria-label="'+name+', vazio">'+svg(G[id==='weapon'?'sword':id==='ring2'?'ring':id])+'<i class="plus">+</i></button>';
   }
@@ -692,8 +695,10 @@ function srcLine(n){
 /* Quais Dusks (capítulo-episódio) ainda precisam ser feitas, a partir dos materiais que faltam */
 function dusksHTML(placed){
   const T=DR.chapters,miss=[];
-  Object.keys(C.need).forEach(n=>{
-    const need=C.need[n],have=S.inv[n]||0;
+  const multi=S.sets.length>1,agg=!!(S.sum||S.dkAll)&&multi,D=(agg&&!S.sum)?calc(true):C;
+  if(agg)placed=D.cnt.placed;
+  Object.keys(D.need).forEach(n=>{
+    const need=D.need[n],have=S.inv[n]||0;
     if(n===ESS||need<=have||!SRC[n])return;
     const cs=[];SRC[n].forEach(x=>{const k=x.ch+'-'+x.tier;if(cs.indexOf(k)<0)cs.push(k)});
     miss.push({n:n,q:need-have,cs:cs});
@@ -723,7 +728,8 @@ function dusksHTML(placed){
   if(!placed)line='<span class="dim">Coloque peças no personagem para ver onde farmar.</span>';
   else if(!go.length)line='<span class="okk">Nenhuma Dusk pendente: os materiais já estão completos.</span>';
   else line='<span class="lab">Faltam ir em:</span><div class="dklist">'+go.join('')+'</div><span class="dim">Sólido = só dropa ali · contorno = sugerida</span>';
-  return '<h2 class="sh sub" style="--cc:#4fd0ff"><span>Dusks que faltam</span><small>capítulo-episódio</small></h2><div class="dusks">'+chap+'</div><div class="dkline">'+line+'</div>';
+  const tg=multi?'<button class="btn ghost dkall'+(agg?' on':'')+'" data-act="dkall" aria-pressed="'+agg+'"'+(S.sum?' disabled title="Já somando todos os sets (Somar todos os sets: sim)"':' title="Alterna entre o set selecionado e a soma de todos os sets"')+'>'+(agg?'Todos os sets':'Só este set')+'</button>':'';
+  return '<h2 class="sh sub" style="--cc:#4fd0ff"><span>Dusks que faltam</span><small>'+(agg?'somando '+D.cnt.sets+' sets · ':'')+'capítulo-episódio</small>'+tg+'</h2><div class="dusks">'+chap+'</div><div class="dkline">'+line+'</div>';
 }
 function mrow(n){
   const have=S.inv[n]||0,wq=S.watch.indexOf(n)>=0?(S.wq[n]||0):0,need=(C.need[n]||0)+wq,tot=C.total[n]||0;
@@ -857,12 +863,20 @@ document.addEventListener('click',e=>{
     case 'furn':S.furn=el.dataset.id;S.group=GROUPS[S.furn][0];S.sel=null;save();break;
     case 'group':S.group=el.dataset.g;S.sel=null;save();break;
     case 'tile':{
-      const a=S.sel&&ITEM[S.sel],b=ITEM[el.dataset.id];
-      S.sel=el.dataset.id;
+      const id=el.dataset.id,now=Date.now();
+      S.sel=id;
+      if(S.lastTile===id&&now-(S.lastTileT||0)<500){S.lastTile=null;equipItem(id)}
+      else{S.lastTile=id;S.lastTileT=now}
       break}
     case 'equip':if(S.sel)equipItem(S.sel);break;
     case 'cancel':S.sel=null;break;
-    case 'slot':slotClick(el.dataset.slot);break;
+    case 'slot':{
+      const sl=el.dataset.slot,now=Date.now(),before=S.equipped[sl];
+      if(before&&S.lastSlot===sl&&now-(S.lastSlotT||0)<500){delete S.equipped[sl];S.lastSlot=null;save();break}
+      slotClick(sl);
+      S.lastSlot=(before&&S.equipped[sl]===before)?sl:null;S.lastSlotT=now;
+      break}
+    case 'dkall':S.dkAll=!S.dkAll;save();break;
     case 'istep':{const n=mname(el);S.inv[n]=Math.max(0,(S.inv[n]||0)+d);save();break}
     case 'done':{const x=S.equipped[el.dataset.slot];if(x){x.done=x.done||{};const k=el.dataset.key;if(x.done[k])delete x.done[k];else x.done[k]=true;save()}break}
     case 'remove':delete S.equipped[el.dataset.slot];save();break;
@@ -919,10 +933,6 @@ document.addEventListener('click',e=>{
 });
 
 document.addEventListener('focusout',e=>{if(e.target.id==='setname'&&S.ren!=null){commitRename();render()}});
-document.addEventListener('dblclick',e=>{
-  const el=e.target.closest('[data-act="slot"]');
-  if(el&&S.equipped[el.dataset.slot]){delete S.equipped[el.dataset.slot];save();render()}
-});
 
 document.addEventListener('change',e=>{
   const t=e.target;

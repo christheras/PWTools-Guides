@@ -89,6 +89,10 @@ ul,ol{list-style:none;margin:0;padding:0}
 .sh.sub{flex-wrap:wrap;gap:2px 14px}
 .sh.sub span{white-space:normal;overflow:visible}
 .sh.sub::after{display:none}
+.ephd{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:20px 0 4px;padding:6px 10px;border-left:3px solid var(--cc,#8d97a5);background:color-mix(in srgb,var(--cc,#8d97a5) 9%,transparent);font-size:13.5px;font-weight:600}
+.ephd .ep{display:inline-block;padding:2px 8px;border-radius:3px;background:var(--cc);color:#111;font-size:12px;font-weight:700}
+.bsub{margin:12px 0 0 6px;padding-left:8px;border-left:2px solid var(--cc);font-size:13px;font-weight:700;opacity:.9}
+.ephd small{margin-left:auto;opacity:.7;font-weight:500}
 .sh.sub::after{border-top-color:color-mix(in srgb,var(--cc,#8d97a5) 35%,transparent)}
 .sh small{font:500 13px var(--font-body);letter-spacing:0;text-transform:none;color:var(--t1);white-space:normal}
 
@@ -432,12 +436,14 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 /* ---------- Drops (tabelas do IronfreaK) ---------- */
 const SRC={},MORD={};
 let mo=0;
-DR.drops.forEach(d=>d.rows.forEach(r=>{
-  (SRC[r[1]]=SRC[r[1]]||[]).push({boss:d.boss,ch:d.ch,tier:r[0],mode:d.mode,r:r[2]});
+DR.drops.forEach((d,di)=>d.rows.forEach(r=>{
+  (SRC[r[1]]=SRC[r[1]]||[]).push({bi:di,boss:d.boss,ch:d.ch,tier:r[0],mode:d.mode,r:r[2]});
   if(!(r[1] in MORD))MORD[r[1]]=mo++;
 }));
 const rar=n=>n===ESS?'e':(SRC[n]?SRC[n][0].r:'u');
 const chOf=n=>SRC[n]?Math.min.apply(null,SRC[n].map(s=>s.ch)):0;
+const srcSort=(a,b)=>a.ch-b.ch||a.tier-b.tier||a.bi-b.bi;
+const primOf=n=>SRC[n]?SRC[n].slice().sort(srcSort)[0]:null;
 const RCOL={n:'#58c47a',d:'#f0b429',r:'#ef5b5b',b:'#5aa7ff',e:'#ffd45c',u:'#8a98a5'};
 const RTXT={n:'',d:'Dourado',r:'Raro',b:'Básico',e:'',u:''};
 const ALLM=[ESS];
@@ -724,7 +730,7 @@ function srcLine(n){
   if(!s)return n===ESS?'<div class="sline"><span class="sl" style="--cc:#f2c53d">Como fazer</span><span class="tr">5 Tábua Polida + 5 Carvão de Pedra + 5 Pó de Esmeril + 5 Aço Temperado</span></div>':'<div class="sline"><span class="sl" style="--cc:#8d97a5">Origem</span><span class="tr">não identificada na tabela de drops</span></div>';
   const T=DR.chapters,seen=[],uniq=[];
   s.forEach(x=>{const k=x.boss+'|'+x.ch+'|'+x.tier;if(seen.indexOf(k)<0){seen.push(k);uniq.push(x)}});
-  const f=uniq[0],cc=CHC[f.ch],rest=uniq.slice(1);
+  uniq.sort(srcSort);const f=uniq[0],cc=CHC[f.ch],rest=uniq.slice(1);
   let h='<div class="sline"><span class="sl" style="--cc:#4fd0ff">Onde farmar</span><span class="cp" style="--cc:'+cc+'">Cap. '+f.ch+'</span><span class="tr">'+esc(T[f.ch-1].name)+'</span></div>'
     +'<div class="sline"><span class="ep" style="--cc:'+epCol(f.ch,f.tier)+'">Episódio '+f.tier+'</span><b>'+esc(f.boss)+'</b><span class="tr lv">'+esc(T[f.ch-1].tiers[f.tier-1])+'</span></div>'
     +'<div class="sline">'+modeChips(f.mode)+'</div>';
@@ -810,10 +816,21 @@ function trackerHTML(){
   const mord=n=>(n in MORD)?MORD[n]:9999;
   const secHTML=[1,2,3,0].map(ch=>{
     const arr=sec[ch];if(!arr.length)return '';
-    arr.sort((a,b)=>(a.use===b.use?0:a.use?-1:1)||mord(a.name)-mord(b.name));
+    const tr=r=>{const s=primOf(r.name);return s?s.tier:0};
+    const bi=r=>{const s=primOf(r.name);return s?s.bi:99};
+    arr.sort((a,b)=>tr(a)-tr(b)||bi(a)-bi(b)||mord(a.name)-mord(b.name));
     const T=DR.chapters[ch-1];
-    const h=ch?'<h2 class="sh sub" style="--cc:'+CHC[ch]+'"><span>Cap. '+ch+' · '+T.name+'</span><small>chefe em modo Alto gasta '+T.ess+' Essência'+(T.ess>1?'s':'')+'</small></h2>':'<h2 class="sh sub"><span>Outros materiais</span><small>nome como aparece na wiki</small></h2>';
-    return h+'<ul>'+arr.map(r=>r.html).join('')+'</ul>';
+    let h=ch?'<h2 class="sh sub" style="--cc:'+CHC[ch]+'"><span>Cap. '+ch+' · '+T.name+'</span><small>chefe em modo Alto gasta '+T.ess+' Essência'+(T.ess>1?'s':'')+'</small></h2>':'<h2 class="sh sub"><span>Outros materiais</span><small>nome como aparece na wiki</small></h2>';
+    if(!ch)return h+'<ul>'+arr.map(r=>r.html).join('')+'</ul>';
+    [1,2,3].forEach(t=>{
+      const g=arr.filter(r=>tr(r)===t);if(!g.length)return;
+      const bs=[];g.forEach(r=>{const s=primOf(r.name);if(bs.indexOf(s.boss)<0)bs.push(s.boss)});
+      h+='<h3 class="ephd" style="--cc:'+epCol(ch,t)+'"><span class="ep" style="--cc:'+epCol(ch,t)+'">Dusk '+ch+'-'+t+'</span><span class="tr lv">'+esc(T.tiers[t-1])+'</span><small>'+g.length+(g.length>1?' materiais':' material')+'</small></h3>';
+      let last=null;
+      g.forEach(r=>{const s=primOf(r.name);if(s.bi!==last){if(last!==null)h+='</ul>';last=s.bi;h+='<div class="bsub" style="--cc:'+epCol(ch,t)+'">'+esc(s.boss)+'</div><ul>'}h+=r.html});
+      h+='</ul>';
+    });
+    return h;
   }).join('');
   const ess=mrow(ESS).html;
   const avail=ALLM.filter(n=>n!==ESS&&names.indexOf(n)<0);

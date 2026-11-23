@@ -65,20 +65,21 @@ ul,ol{list-style:none;margin:0;padding:0}
 .legend i{width:9px;height:9px;border-radius:50%;background:var(--c)}
 .legend i.grad{background:linear-gradient(90deg,#ea4b50,#f5c518)}
 
-.board{display:grid;grid-template-columns:minmax(0,370px) minmax(0,410px) minmax(0,1fr);align-items:start}
+.board{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);align-items:start;row-gap:36px}
 .sec{min-width:0;padding:0 26px}
 .sec:first-child{padding-left:0}
-.sec:last-child{padding-right:0}
-.sec+.sec{border-left:1px dashed var(--line)}
-@media (max-width:1200px){
-  .board{grid-template-columns:minmax(0,1fr) minmax(0,1fr);row-gap:36px}
-  .sec:nth-child(2){padding-right:0}
-  .tracker{grid-column:1/-1;border-left:0!important;padding:30px 0 0!important;border-top:1px dashed var(--line)}
-}
+.sec:nth-child(2){padding-right:0;border-left:1px dashed var(--line)}
+.inv{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 26px;align-items:start}
+.invA,.invB{min-width:0}
+.invB>.sh:first-child{margin-top:0}
+@media (max-width:1200px){.board{grid-template-columns:minmax(0,1fr)}.sec:nth-child(2){padding-left:0;border-left:0;border-top:1px dashed var(--line);padding-top:30px}}
+@media (max-width:1000px){.inv{grid-template-columns:minmax(0,1fr)}}
+.tracker{grid-column:1/-1;padding:30px 0 0;border-top:1px dashed var(--line)}
 @media (max-width:760px){
   .board{grid-template-columns:minmax(0,1fr)}
   .sec,.sec:nth-child(2){border-left:0!important;padding:0!important}
   .sec+.sec{border-top:1px dashed var(--line);padding-top:30px!important}
+  .dkgrid,.mgrid{grid-template-columns:minmax(0,1fr)!important}
 }
 
 /* cabeçalhos de seção */
@@ -89,6 +90,18 @@ ul,ol{list-style:none;margin:0;padding:0}
 .sh.sub{flex-wrap:wrap;gap:2px 14px}
 .sh.sub span{white-space:normal;overflow:visible}
 .sh.sub::after{display:none}
+.dkgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 24px;align-items:start}
+.dkcol{min-width:0;padding-bottom:6px}
+.dkcol .ephd{margin-top:14px}
+.dkempty{margin:10px 0 0 6px;color:var(--ink-faint);font-size:13px}
+.mgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 24px;align-items:start}
+.dkcol .mrow,.mgrid .mrow{grid-template-columns:36px minmax(0,1fr)}
+.dkcol .mcount,.mgrid .mcount{grid-column:2}
+.dkcol .mic{align-self:start}
+.dkcol .mnote.src .sline:not(.alts){display:none}
+.dkcol .mnote.src:not(:has(.alts)){display:none}
+.dkcol .mnote.src{margin-top:4px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:14px 24px;align-items:start}
 .ephd{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:20px 0 4px;padding:6px 10px;border-left:3px solid var(--cc,#8d97a5);background:color-mix(in srgb,var(--cc,#8d97a5) 9%,transparent);font-size:13.5px;font-weight:600}
 .ephd .ep{display:inline-block;padding:2px 8px;border-radius:3px;background:var(--cc);color:#111;font-size:12px;font-weight:700}
 .bsub{margin:12px 0 0 6px;padding-left:8px;border-left:2px solid var(--cc);font-size:13px;font-weight:700;opacity:.9}
@@ -358,6 +371,23 @@ button.cell:hover{border-color:var(--accent-line)}
 #tip.on{opacity:1;visibility:visible}
 #tip div{overflow-wrap:anywhere}
 #tip .tn{font-weight:700;font-size:15px}
+#tip .mt{display:flex;align-items:center;gap:8px}
+#tip .ti{flex:none;width:34px;height:34px;display:block;border-radius:3px;overflow:hidden;position:relative}
+#tip .ti.s{width:26px;height:26px}
+#tip .ti>.tile,#tip .ti>.mi{display:block;width:100%;height:100%;border-radius:0;pointer-events:none}
+#tip .ti img{display:block;width:100%;height:100%;object-fit:cover}
+#tip .tsum{margin:4px 0 2px;color:#9aa3b2;font-size:12.5px}
+#tip .tsum b{color:#fff;font-weight:600}
+#tip .tpc{margin-top:9px;padding-top:8px;border-top:1px solid #2a3447}
+#tip .tpn{display:flex;flex-direction:column;line-height:1.25}
+#tip .tpn small{color:#9aa3b2;font-size:12px}
+#tip .tln{margin:4px 0 0 42px;color:#cfd6e2;font-size:13px}
+#tip .tln b{color:#fff;font-weight:600}
+#tip .no{color:#ff7a6b;font-weight:600}
+#tip .yes{color:#4cff9a;font-weight:600}
+#tip .tsum b.no{color:#ff7a6b}
+#tip .tsum b.yes{color:#4cff9a}
+#tip .tln em{font-style:normal;color:#9aa3b2}
 #tip .tb{color:#ff6000}
 #tip .ts{color:#8080ff}
 #tip .tg{color:#4cff9a}
@@ -570,7 +600,7 @@ const reqsOf=it=>it.m.map(x=>({n:x[0],q:x[1]})).concat(it.e?[{n:ESS,q:it.e}]:[])
 
 function calc(all){
   const rem={};Object.keys(S.inv).forEach(k=>{rem[k]=S.inv[k]||0});
-  const pieces={},need={},total={},cnt={placed:0,crafted:0,ready:0,sets:0};
+  const pieces={},need={},total={},use={},cnt={placed:0,crafted:0,ready:0,sets:0};
   const idx=(S.sum||all)?S.sets.map((_,i)=>i):[S.cur];
   cnt.sets=idx.length;
   idx.forEach(si=>ORDER.forEach(sl=>{
@@ -585,6 +615,7 @@ function calc(all){
       st.reqs.forEach(r=>{
         need[r.n]=(need[r.n]||0)+r.q;
         const have=rem[r.n]||0,take=Math.min(have,r.q);rem[r.n]=have-take;r.take=take;sa+=take;sb+=r.q;
+        (use[r.n]=use[r.n]||[]).push({si:si,sl:sl,root:e.id,step:st.item.id,q:r.q,t:take});
       });
       st.pct=sb?sa/sb:1;st.ready=sa===sb;a+=sa;b+=sb;pend++;if(st.ready)ready++;
       st.stat=stat(st.pct,false,{ok:'Pronta para forjar',none:'Não iniciada',part:'Em progresso'});
@@ -594,7 +625,7 @@ function calc(all){
     if(si===S.cur)pieces[sl]={item:ITEM[e.id],e:e,steps:steps,crafted:crafted,pct:pct,pend:pend,ready:ready,
       stat:crafted?stat(1,true,{done:'Forjada'}):stat(pct,false,{ok:'Materiais completos',none:'Não iniciada',part:'Em progresso'})};
   }));
-  return {pieces:pieces,need:need,total:total,cnt:cnt};
+  return {pieces:pieces,need:need,total:total,use:use,cnt:cnt};
 }
 
 /* ---------- Forja ---------- */
@@ -708,14 +739,14 @@ function invHTML(){
   }).join('');
   let hint='Selecione uma peça na Forja.';
   if(S.sel){const it=ITEM[S.sel];hint=slotOn(it)?'Peça já equipada. Duplo clique no slot remove.':'Clique no slot destacado ou arraste a peça até ele.'}
-  return ''
+  return '<div class="invA">'
   +setsHTML()
   +'<h2 class="sh"><span>Equipamento · '+placed+'/'+SLOTS.length+' slots</span></h2>'
-  +'<div class="equip"><div class="eq3">'+LEFT.map(slotCell).join('')+'</div><div class="eq2">'+RIGHT.map(slotCell).join('')+'</div></div>'
+  +'<div class="equip"><div class="eq3">'+LEFT.map(slotCell).join('')+'</div><div class="eq2">'+RIGHT.map(slotCell).join('')+'</div></div></div><div class="invB">'
   +'<h2 class="sh sub"><span>Inventário · '+stacks.length+'/'+BAG+'</span></h2>'
   +'<div class="bag">'+cells+'</div>'
   +'<div class="bagadd"><div class="combo"><span class="cico'+(S.bagm==null?' none':'')+'">'+(S.bagm==null?'&#8981;':matIcon(ALLM[S.bagm]))+'</span><input id="bagm" type="text" autocomplete="off" spellcheck="false" placeholder="Pesquisar item…" value="'+(S.bagm==null?'':esc(ALLM[S.bagm]))+'" aria-label="Material para adicionar ao inventário"><div class="clist" id="baglist" hidden>'+ALLM.map((n,i)=>'<button type="button" data-act="bagpick" data-m="'+i+'" data-k="'+esc(norm(n))+'"><span class="ci">'+matIcon(n)+'</span><span class="cn">'+esc(n)+'</span>'+((S.inv[n]||0)>0?'<span class="cq">×'+S.inv[n]+'</span>':'')+'</button>').join('')+'<div class="cnone" hidden>Nenhum material encontrado.</div></div></div><input id="bagq" type="number" min="1" inputmode="numeric" value="'+(S.bagq||1)+'" aria-label="Quantidade"><button class="btn sm" data-act="bagadd"'+''+'>Adicionar</button></div>'
-  +'<div class="invfoot"><button class="btn ghost" data-act="clear"'+(placed?'':' disabled')+'>'+(S.confirm?'Confirmar limpeza?':'Limpar peças')+'</button><button class="btn ghost" data-act="clearbag"'+(stacks.length?'':' disabled')+'>'+(S.confirmBag?'Confirmar limpeza?':'Limpar materiais')+'</button><span class="hint">'+hint+'</span></div>';
+  +'<div class="invfoot"><button class="btn ghost" data-act="clear"'+(placed?'':' disabled')+'>'+(S.confirm?'Confirmar limpeza?':'Limpar peças')+'</button><button class="btn ghost" data-act="clearbag"'+(stacks.length?'':' disabled')+'>'+(S.confirmBag?'Confirmar limpeza?':'Limpar materiais')+'</button><span class="hint">'+hint+'</span></div></div>';
 }
 
 /* ---------- Tracker ---------- */
@@ -786,7 +817,7 @@ function mrow(n){
   else{pct=0;st={c:COL.dim,t:'Sem uso agora'};note='nenhuma peça equipada usa';use=false}
   const r=rar(n),tag=(r==='d'||r==='r'||r==='b')?'<span class="tag '+r+'">'+RTXT[r]+'</span>':'';
   return {name:n,use:use,html:
-    '<li class="mrow'+(use?'':' idle')+'" style="--c:'+st.c+'">'
+    '<li class="mrow'+(use?'':' idle')+'" data-mat="'+MIDX[n]+'" style="--c:'+st.c+'">'
     +'<span class="mic">'+matIcon(n)+'</span>'
     +'<div class="mmain"><div class="mtop"><b>'+esc(n)+'</b>'+tag+'<em>'+st.t+'</em></div><div class="bar"><i style="width:'+Math.round(pct*100)+'%"></i></div><div class="mnote">'+note+'</div><div class="mnote src">'+srcLine(n)+'</div></div>'
     +'<div class="mcount"><button class="sbtn" data-act="istep" data-m="'+MIDX[n]+'" data-d="-1" aria-label="Diminuir '+esc(n)+'">−</button>'
@@ -821,16 +852,18 @@ function trackerHTML(){
     arr.sort((a,b)=>tr(a)-tr(b)||bi(a)-bi(b)||mord(a.name)-mord(b.name));
     const T=DR.chapters[ch-1];
     let h=ch?'<h2 class="sh sub" style="--cc:'+CHC[ch]+'"><span>Cap. '+ch+' · '+T.name+'</span><small>chefe em modo Alto gasta '+T.ess+' Essência'+(T.ess>1?'s':'')+'</small></h2>':'<h2 class="sh sub"><span>Outros materiais</span><small>nome como aparece na wiki</small></h2>';
-    if(!ch)return h+'<ul>'+arr.map(r=>r.html).join('')+'</ul>';
+    if(!ch)return h+'<ul class="mgrid">'+arr.map(r=>r.html).join('')+'</ul>';
+    let cols='';
     [1,2,3].forEach(t=>{
-      const g=arr.filter(r=>tr(r)===t);if(!g.length)return;
-      const bs=[];g.forEach(r=>{const s=primOf(r.name);if(bs.indexOf(s.boss)<0)bs.push(s.boss)});
-      h+='<h3 class="ephd" style="--cc:'+epCol(ch,t)+'"><span class="ep" style="--cc:'+epCol(ch,t)+'">Dusk '+ch+'-'+t+'</span><span class="tr lv">'+esc(T.tiers[t-1])+'</span><small>'+g.length+(g.length>1?' materiais':' material')+'</small></h3>';
+      const g=arr.filter(r=>tr(r)===t);
+      let c='<div class="dkcol"><h3 class="ephd" style="--cc:'+epCol(ch,t)+'"><span class="ep" style="--cc:'+epCol(ch,t)+'">Dusk '+ch+'-'+t+'</span><span class="tr lv">'+esc(T.tiers[t-1])+'</span><small>'+g.length+(g.length===1?' material':' materiais')+'</small></h3>';
+      if(!g.length)c+='<p class="dkempty">Nenhum material.</p>';
       let last=null;
-      g.forEach(r=>{const s=primOf(r.name);if(s.bi!==last){if(last!==null)h+='</ul>';last=s.bi;h+='<div class="bsub" style="--cc:'+epCol(ch,t)+'">'+esc(s.boss)+'</div><ul>'}h+=r.html});
-      h+='</ul>';
+      g.forEach(r=>{const s=primOf(r.name);if(s.bi!==last){if(last!==null)c+='</ul>';last=s.bi;c+='<div class="bsub" style="--cc:'+epCol(ch,t)+'">'+esc(s.boss)+'</div><ul>'}c+=r.html});
+      if(g.length)c+='</ul>';
+      cols+=c+'</div>';
     });
-    return h;
+    return h+'<div class="dkgrid">'+cols+'</div>';
   }).join('');
   const ess=mrow(ESS).html;
   const avail=ALLM.filter(n=>n!==ESS&&names.indexOf(n)<0);
@@ -842,7 +875,7 @@ function trackerHTML(){
     const stepsHTML=open?'<ol class="steps">'+p.steps.map(st=>{
       const chips=st.reqs.map(r=>{
         const c=st.done?COL.blue:stat(r.take/r.q,false).c;
-        return '<span class="chip" style="--c:'+c+'">'+r.q+' '+esc(r.n)+'</span>';
+        return '<span class="chip" data-mat="'+MIDX[r.n]+'" style="--c:'+c+'">'+r.q+' '+esc(r.n)+'</span>';
       }).join('');
       return '<li class="step" style="--c:'+st.stat.c+'"><button class="tgl" data-act="done" data-slot="'+sl+'" data-key="'+esc(st.key)+'" aria-pressed="'+st.done+'">'+(st.root?'Forjada':'Alma pronta')+'</button>'
         +'<div class="sname">'+esc(st.item.n)+'<small>NV '+st.item.l+'</small><em>'+st.stat.t+'</em></div><div class="chips">'+chips+'</div></li>';
@@ -859,14 +892,14 @@ function trackerHTML(){
   +dusksHTML(placed)
   +'<h2 class="sh sub"><span>Essência do Crepúsculo</span><small>gasta em toda forja de Dusk e por chefes em modo Alto</small></h2><ul>'+ess+'</ul>'
   +sel+secHTML
-  +'<h2 class="sh sub"><span>Peças no personagem · '+esc(S.sets[S.cur].name)+'</span>'+(S.sum?'<small>os totais acima somam todos os sets</small>':'')+'</h2><ul>'+prows+'</ul>'
+  +'<h2 class="sh sub"><span>Peças no personagem · '+esc(S.sets[S.cur].name)+'</span>'+(S.sum?'<small>os totais acima somam todos os sets</small>':'')+'</h2><ul class="pgrid">'+prows+'</ul>'
   +'<p class="note">Cada peça avançada exige a Alma da peça anterior, então a lista mostra a cadeia completa na ordem de forja. Marque "Alma pronta" nas etapas que você já tem. O estoque é o que você digita; marcar uma etapa não desconta materiais. Os materiais são distribuídos pelas etapas na ordem da lista, da primeira à última peça.</p>';
 }
 
 /* ---------- Render ---------- */
 const $forge=document.getElementById('forge'),$inv=document.getElementById('inv'),$trk=document.getElementById('tracker');
 function render(){
-  C=calc();
+  C=calc();tipKey=null;
   const a=document.activeElement;
   const keep=(a&&a.tagName==='INPUT'&&a.id)?a:null;
   let range=null;
@@ -1152,7 +1185,30 @@ function tipHTML(it,hint){
 }
 const tipEl=document.createElement('div');tipEl.id='tip';tipEl.setAttribute('role','tooltip');document.body.appendChild(tipEl);
 let tipKey=null;
+function matTipHTML(n){
+  const u=(C.use&&C.use[n])||[],multi=S.sets.length>1&&(S.sum||false);
+  const r=rar(n),pl=(q,s,p)=>q+' '+(q===1?s:p);
+  let h='<div class="tn mt"><span class="ti">'+matIcon(n)+'</span><span style="color:'+(RCOL[r]||'#fff')+'">'+esc(n)+'</span></div>';
+  if(!u.length)return h+'<div class="tm">Nenhuma peça equipada precisa deste material agora.</div>';
+  const tot=u.reduce((s,x)=>s+x.q,0),got=u.reduce((s,x)=>s+x.t,0),miss=tot-got;
+  const grp={},ord=[];
+  u.forEach(x=>{const k=x.si+'|'+x.sl;if(!grp[k]){grp[k]={si:x.si,sl:x.sl,root:x.root,steps:[]};ord.push(k)}grp[k].steps.push(x)});
+  h+='<div class="tsum">'+(miss>0?'Faltam <b class="no">'+pl(miss,'unidade','unidades')+'</b>':'<b class="yes">Você já tem o suficiente</b>')+' · '+got+' de '+tot+' para <b>'+pl(ord.length,'peça equipada','peças equipadas')+'</b></div>';
+  ord.forEach(k=>{
+    const g=grp[k],rt=ITEM[g.root];
+    h+='<div class="tpc"><div class="mt"><span class="ti">'+tileOf(rt)+'</span><span class="tpn"><b style="color:'+TIP_COL[tierOf(rt)]+'">'+esc(rt.n)+'</b><small>'+esc(LBL[g.sl]||g.sl)+(multi?' · '+esc(S.sets[g.si].name):'')+'</small></span></div>';
+    const by={},so=[];g.steps.forEach(s=>{if(!by[s.step]){by[s.step]={step:s.step,q:0,t:0,n:0};so.push(s.step)}by[s.step].q+=s.q;by[s.step].t+=s.t;by[s.step].n++});
+    so.forEach(k2=>{
+      const s=by[k2],it=ITEM[s.step],m=s.q-s.t;
+      h+='<div class="tln"><b>'+pl(s.q,'unidade','unidades')+'</b> '+(s.step===g.root?'para forjar a peça':'para a Alma <span style="color:'+TIP_COL[tierOf(it)]+'">'+esc(it.n)+'</span>'+(s.n>1?' <em>('+s.n+' etapas)</em>':''))+' <span class="'+(m>0?'no':'yes')+'">'+(m>0?(s.t>0?'· faltam '+m:'· faltam todas'):'· completo ✓')+'</span></div>';
+    });
+    h+='</div>';
+  });
+  return h;
+}
 function tipTarget(e){
+  const mt=e.target&&e.target.closest&&e.target.closest('[data-mat]');
+  if(mt&&ALLM[mt.dataset.mat])return {mat:ALLM[mt.dataset.mat],hint:''};
   const t=e.target&&e.target.closest&&e.target.closest('[data-act="tile"],.slot.full[data-slot]');
   if(!t)return null;
   if(t.dataset.act==='tile'){const it=ITEM[t.dataset.id];return it?{it:it,hint:'Duplo clique: equipar'+(canForge(it)?' · materiais completos':'')}:null}
@@ -1162,8 +1218,8 @@ function tipTarget(e){
 function tipMove(e){
   const g=tipTarget(e);
   if(!g){tipEl.classList.remove('on');tipKey=null;return}
-  const key=g.it.id+'|'+g.hint+'|'+Object.keys(S.equipped).length;
-  if(key!==tipKey){tipEl.innerHTML=tipHTML(g.it,g.hint);tipKey=key}
+  const key=g.mat?'m|'+g.mat:g.it.id+'|'+g.hint+'|'+Object.keys(S.equipped).length;
+  if(key!==tipKey){tipEl.innerHTML=g.mat?matTipHTML(g.mat):tipHTML(g.it,g.hint);tipKey=key}
   tipEl.classList.add('on');
   const w=tipEl.offsetWidth,hh=tipEl.offsetHeight;
   let x=e.clientX+16,y=e.clientY+16;

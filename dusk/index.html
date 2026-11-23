@@ -848,7 +848,7 @@ function trackerHTML(){
     const st=stat(p,false,{none:'Não iniciado',part:'Em progresso',ok:'Materiais suficientes'});
     sm={c:st.c,t:st.t,pct:p,d:(S.sum?'Somando '+C.cnt.sets+' sets. ':'')+(missing?'Faltam '+missing+' materiais (contando Essências) para '+pend+(pend===1?' peça pendente.':' peças pendentes.'):'Nada falta para as peças pendentes.')};
   }
-  const names=ALLM.filter(n=>n!==ESS&&((C.total[n]||0)>0||(S.inv[n]||0)>0||S.watch.indexOf(n)>=0));
+  const names=ALLM.filter(n=>n!==ESS&&((C.total[n]||0)>0||S.watch.indexOf(n)>=0));
   const rows=names.map(mrow);
   const sec={0:[],1:[],2:[],3:[]};
   rows.forEach(r=>sec[chOf(r.name)].push(r));

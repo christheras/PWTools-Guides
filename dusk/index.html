@@ -117,6 +117,10 @@ ul,ol{list-style:none;margin:0;padding:0}
 .tab:hover{color:var(--ink)}
 .tab.on{color:var(--ink);border-bottom-color:var(--accent)}
 .tab.add{color:var(--accent)}
+.tw[draggable=true]{cursor:grab}
+.tw.dragging{opacity:.4}
+.tw.dropb{box-shadow:inset 3px 0 0 var(--accent)}
+.tw.dropa{box-shadow:inset -3px 0 0 var(--accent)}
 .tdel{font:500 11px var(--font-mono);color:var(--ink-faint);padding:2px 5px;border-radius:4px}
 .tdel:hover{color:var(--dng)}
 .tdel.ask{color:var(--dng);border:1px solid var(--dngb)}
@@ -434,7 +438,7 @@ button.cell:hover{border-color:var(--accent-line)}
   </main>
   <footer class="credit">
     Feito por <b>Heras</b>, junto com o Claude<br>
-    <a href="https://www.youtube.com/@christheras" target="_blank" rel="noopener">youtube.com/@christheras</a>
+    <a href="https://www.youtube.com/@christheras" target="_blank" rel="noopener">youtube.com/@christheras</a><br><a href="https://discord.com/users/1121113365167743097" target="_blank" rel="noopener">Feedback ou dúvidas? Me chame no Discord</a>
     <span class="cp">© 2026 Heras · Software livre sob a <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GNU GPL v3</a> · <a href="https://github.com/christheras/LivroDivinoTracker" target="_blank" rel="noopener">Código-fonte</a></span><span class="cp">Marcas e imagens de Perfect World pertencem aos respectivos titulares. Projeto de fã, sem vínculo oficial com o jogo.</span>
   </footer>
 </div>
@@ -719,7 +723,7 @@ function setsHTML(){
     const t=S.ren===i?'<input id="setname" class="num" style="width:120px" type="text" maxlength="24" value="'+esc(s.name)+'" aria-label="Nome do set">'
       :'<button class="tab'+(on?' on':'')+'" data-act="set" data-i="'+i+'" aria-pressed="'+on+'" title="'+esc(s.name)+' · '+c+' peças (duplo clique para renomear)">'+esc(s.name)+' <small>'+c+'</small></button>';
     const x=n>1?'<button class="tdel'+(S.confirmDel===i?' ask':'')+'" data-act="delset" data-i="'+i+'" aria-label="Excluir '+esc(s.name)+'" title="Excluir set">'+(S.confirmDel===i?'Excluir?':'×')+'</button>':'';
-    return '<span class="tw">'+t+x+'</span>';
+    return '<span class="tw" data-si="'+i+'"'+(S.ren===i?'':' draggable="true" title="Arraste para mudar a ordem"')+'>'+t+x+'</span>';
   }).join('');
   return '<div class="tabs" role="group" aria-label="Sets de equipamento">'+tabs+'<span class="tw"><button class="tab add" data-act="newset" title="Criar um novo set">+ Novo set</button></span></div>'
     +'<div class="invfoot" style="margin:0 0 14px"><button class="btn ghost" data-act="renset" title="Renomear o set selecionado (ou clique duas vezes na aba)">'+(S.ren!=null?'Salvar nome':'Renomear set')+'</button><button class="btn ghost'+(S.sum?' on':'')+'" data-act="sum" aria-pressed="'+!!S.sum+'" title="Soma os materiais de todos os sets no Tracker">Somar todos os sets: '+(S.sum?'sim':'não')+'</button></div>';
@@ -1256,6 +1260,41 @@ document.addEventListener('drop',e=>{
   }
 });
 document.addEventListener('dragend',()=>{if(drag){drag=null;render()}});
+
+/* Reordenar sets: arrastar uma aba para qualquer posição */
+let dragSet=-1;
+const clearDrop=()=>{document.querySelectorAll('.tw.dropb,.tw.dropa,.tw.dragging').forEach(x=>x.classList.remove('dropb','dropa','dragging'))};
+document.addEventListener('dragstart',e=>{
+  const w=e.target.closest&&e.target.closest('.tw[data-si]');
+  if(!w||S.ren!=null)return;
+  dragSet=+w.dataset.si;w.classList.add('dragging');
+  try{e.dataTransfer.setData('text/plain','set:'+dragSet);e.dataTransfer.effectAllowed='move'}catch(_){}
+});
+document.addEventListener('dragover',e=>{
+  if(dragSet<0)return;
+  const w=e.target.closest&&e.target.closest('.tw[data-si]');
+  if(!w)return;
+  e.preventDefault();
+  const r=w.getBoundingClientRect(),after=e.clientX>r.left+r.width/2;
+  document.querySelectorAll('.tw.dropb,.tw.dropa').forEach(x=>x.classList.remove('dropb','dropa'));
+  w.classList.add(after?'dropa':'dropb');
+});
+document.addEventListener('drop',e=>{
+  if(dragSet<0)return;
+  const w=e.target.closest&&e.target.closest('.tw[data-si]');
+  if(!w){clearDrop();dragSet=-1;return}
+  e.preventDefault();
+  const r=w.getBoundingClientRect(),after=e.clientX>r.left+r.width/2;
+  let to=+w.dataset.si+(after?1:0),from=dragSet;
+  dragSet=-1;clearDrop();
+  if(to>from)to--;
+  if(to===from)return;
+  const cur=S.sets[S.cur],mv=S.sets.splice(from,1)[0];
+  S.sets.splice(to,0,mv);
+  S.cur=S.sets.indexOf(cur);S.confirmDel=-1;
+  save();render();
+});
+document.addEventListener('dragend',()=>{if(dragSet>=0){dragSet=-1;clearDrop()}});
 
 render();
 })();

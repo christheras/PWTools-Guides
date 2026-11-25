@@ -74,6 +74,31 @@ ul,ol{list-style:none;margin:0;padding:0}
 .invB>.sh:first-child{margin-top:0}
 @media (max-width:1200px){.board{grid-template-columns:minmax(0,1fr)}.sec:nth-child(2){padding-left:0;border-left:0;border-top:1px dashed var(--line);padding-top:30px}}
 @media (max-width:1000px){.inv{grid-template-columns:minmax(0,1fr)}}
+.rev{grid-column:1/-1;padding:30px 0 0;border-top:1px dashed var(--line)}
+.rvwrap{display:grid;grid-template-columns:minmax(0,460px) minmax(0,1fr);gap:0 36px;align-items:start}
+.rvleft .bsub{margin:14px 0 6px 0}
+.rvleft .bsub small{opacity:.65;font-weight:500;margin-left:6px}
+.rvlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.rvmat{display:flex;align-items:center;gap:9px;padding:5px 8px 5px 5px;border:1px solid var(--line);border-radius:4px;background:var(--well);text-align:left;width:100%;min-width:0;cursor:pointer}
+.rvmat:hover{border-color:var(--ink-dim)}
+.rvmat.sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--well))}
+.rvi{flex:none;width:36px;height:36px;display:block;position:relative;border-radius:3px;overflow:hidden}
+.rvi>*{display:block;width:100%;height:100%;pointer-events:none}
+.rvt{min-width:0;display:flex;flex-direction:column;line-height:1.25}
+.rvn{font-size:13px;font-weight:600;overflow-wrap:anywhere}
+.rvt small{color:var(--ink-faint);font-size:11.5px}
+.rvgl{margin:14px 0 6px;color:var(--ink-dim);font:600 11.5px var(--font-mono);letter-spacing:.08em;text-transform:uppercase}
+.rvtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,60px));gap:5px}
+.rvtog{all:unset;cursor:pointer;display:inline-flex;gap:8px;align-items:center;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit}
+.rvtog:hover{color:var(--accent)}
+.rvtog:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.rvarr{width:1em;text-align:center}
+.rvright .rvq{margin-top:18px}
+.rvq b{color:var(--ink)}
+.rvright .fdetail{max-width:560px}
+.rvright .selname{margin-bottom:2px}
+@media (max-width:1000px){.rvwrap{grid-template-columns:minmax(0,1fr);gap:26px 0}}
+@media (max-width:560px){.rvlist{grid-template-columns:minmax(0,1fr)}}
 .tracker{grid-column:1/-1;padding:30px 0 0;border-top:1px dashed var(--line)}
 @media (max-width:760px){
   .board{grid-template-columns:minmax(0,1fr)}
@@ -438,6 +463,7 @@ button.cell:hover{border-color:var(--accent-line)}
   <main class="board">
     <section class="sec forge" id="forge" aria-label="Forja"></section>
     <section class="sec inv" id="inv" aria-label="Personagem"></section>
+    <section class="sec rev" id="rev" aria-label="Drops e para que servem"></section>
     <section class="sec tracker" id="tracker" aria-label="Tracker de materiais"></section>
   </main>
   <footer class="credit">
@@ -551,7 +577,7 @@ const load=()=>{try{
   const o=JSON.parse(localStorage.getItem('dusk-tracker-v2'));
   if(o&&o.equipped&&o.inv&&o.furn)return {furn:o.furn,group:o.group,inv:o.inv,watch:o.watch||[],cur:0,sets:[{name:'Principal',equipped:o.equipped},{name:'Secundário',equipped:{}}]};
 }catch(e){}return null};
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({furn:S.furn,group:S.group,sets:S.sets,cur:S.cur,inv:S.inv,watch:S.watch,wq:S.wq,sum:!!S.sum,dkAll:!!S.dkAll}))}catch(e){}};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({furn:S.furn,group:S.group,sets:S.sets,cur:S.cur,inv:S.inv,watch:S.watch,wq:S.wq,sum:!!S.sum,dkAll:!!S.dkAll,rvOpen:S.rvOpen!==false,rvCh:S.rvCh,rvTier:S.rvTier}))}catch(e){}};
 const S=Object.assign({sel:null,confirm:false,confirmDel:-1,open:{},watch:[],wq:{}},load()||sample());
 if(!S.wq||typeof S.wq!=='object')S.wq={};
 if(!GROUPS[S.furn]){S.furn='arma';S.group='Espadas'}
@@ -651,21 +677,8 @@ function chainOf(it){
   while(st.length){const x=st.pop();(x.so||[]).forEach(id=>{const s=ITEM[id];if(s&&!out[id]&&s!==it){out[id]=s;st.push(s)}})}
   return out;
 }
-function forgeHTML(){
-  const fu=FURN.find(f=>f.id===S.furn);
-  const list=ITEMS.filter(i=>i.f===S.furn&&i.g===S.group);
-  const selIt=S.sel?ITEM[S.sel]:null,chain=selIt?chainOf(selIt):{},chl=Object.keys(chain).map(k=>chain[k]);
-  const chMax=arr=>arr.reduce((m,x)=>Math.max(m,x.l),0);
-  const bypos={};list.forEach((x,i)=>{bypos[x.p!=null?x.p:i]=x});
-  const cells=Array.from({length:32},(_,i)=>{
-    const it=bypos[i];
-    if(!it)return '<div class="tile unk" aria-hidden="true">?</div>';
-    const sel=S.sel===it.id,eqs=slotOn(it),on=!!eqs;
-    const st=on?C.pieces[eqs].stat:null;
-    const can=canForge(it);
-    return '<button class="tile'+(it.au?' gold':'')+(sel?' sel':'')+(on?' on':'')+(can?' can':'')+(chain[it.id]?' ch':'')+'" data-act="tile" data-id="'+it.id+'" draggable="true" style="--sc:'+tcol(it)+';--tc:'+TIERC(it)+(chain[it.id]?';--cc:'+chainCol(it.l):'')+(st?';--c:'+st.c:'')+'" aria-label="'+esc(it.n)+', nível '+it.l+(on?', equipada':'')+(can?', materiais suficientes para forjar':'')+'" aria-pressed="'+sel+'">'+glyphOf(it)+(it.l?'<span class="lv">'+it.l+'</span>':'')+(on?'<i class="dot"></i>':'')+'</button>';
-  }).join('');
-  const sel=S.sel?ITEM[S.sel]:null;
+function detailHTML(sel){
+  const fu=sel?FURN.find(f=>f.id===sel.f):null;
   const blank='<div class="ms"><div class="msi"></div></div>';
   let slots='';
   if(sel){
@@ -691,10 +704,6 @@ function forgeHTML(){
   const soulTxt=sel&&sel.nr?'Receita ainda não cadastrada: só o ícone da fornalha foi mapeado.':sel&&sel.so.length?'Alma obtida desmontando '+sel.so.map(id=>esc(ITEM[id].n)).join(', ')+' ('+fu.prof.toLowerCase()+').':'';
   const typeTxt=sel?[sel.g,sel.t&&sel.t!==sel.g?sel.t:''].filter(Boolean).join(' · '):'';
   return ''
-  +'<h2 class="sh"><span>Forja · '+fu.full+' · '+list.length+' peças</span></h2>'
-  +'<div class="tabs" role="group" aria-label="Fornalhas">'+FURN.map(f=>{const cf=chl.filter(x=>x.f===f.id);return '<span class="tw"><button class="tab'+(f.id===S.furn?' on':'')+(cf.length?' chn':'')+'"'+(cf.length?' style="--cc:'+chainCol(chMax(cf))+'"':'')+' data-act="furn" data-id="'+f.id+'" aria-pressed="'+(f.id===S.furn)+'">'+f.name+'</button></span>'}).join('')+'</div>'
-  +'<div class="groups" role="group" aria-label="Categorias">'+GROUPS[S.furn].map(g=>{const cg=chl.filter(x=>x.f===S.furn&&x.g===g);return '<button class="gp'+(g===S.group?' on':'')+(cg.length?' chn':'')+'"'+(cg.length?' style="--cc:'+chainCol(chMax(cg))+'"':'')+' data-act="group" data-g="'+esc(g)+'" aria-pressed="'+(g===S.group)+'">'+esc(g)+'</button>'}).join('')+'</div>'
-  +'<div class="fgrid">'+cells+'</div>'
   +'<div class="fdetail">'
   +'<div class="selname'+(sel?'':' none')+'">'+(sel?'<span class="'+tcls(sel)+'">'+esc(sel.n)+'</span> <small>'+(sel.nr?'SEM RECEITA':'NV '+sel.l+(tierOf(sel)==='gold'?' · DOURADA':tierOf(sel)==='red'?' · VERMELHA':''))+'</small>':'Selecione uma peça na grade')+'</div>'
   +(sel&&(typeTxt||sel.st)?'<p class="meta">'+esc(typeTxt)+(cleanSt(sel)?(typeTxt?' · ':'')+'<span class="statb">'+esc(cleanSt(sel))+'</span>':'')+(sel.combo?' · <span class="tcb">'+esc(comboName(sel.combo))+'</span>':'')+'</p>':'')
@@ -704,6 +713,78 @@ function forgeHTML(){
   +'<div class="acts"><button class="btn" data-act="equip"'+(sel&&!same&&!sel.nr?'':' disabled')+'>'+(same?'Equipada':'Equipar')+'</button><button class="btn ghost" data-act="cancel"'+(sel?'':' disabled')+'>Cancelar</button>'+'</div>'
   +'</div>';
 }
+
+/* ---------- Drops: para que serve cada material (tracker reverso) ---------- */
+const MUSE={};ITEMS.forEach(it=>it.m.forEach(x=>{(MUSE[x[0]]=MUSE[x[0]]||[]).push(it)}));
+function itemTile(it,act){
+  const sel=S.sel===it.id,eqs=slotOn(it),on=!!eqs,st=on?C.pieces[eqs].stat:null,can=canForge(it);
+  return '<button class="tile'+(it.au?' gold':'')+(sel?' sel':'')+(on?' on':'')+(can?' can':'')+'" data-act="'+act+'" data-id="'+it.id+'" draggable="true" style="--sc:'+tcol(it)+';--tc:'+TIERC(it)+(st?';--c:'+st.c:'')+'" aria-label="'+esc(it.n)+', nível '+it.l+(on?', equipada':'')+(can?', materiais suficientes para forjar':'')+'" aria-pressed="'+sel+'">'+glyphOf(it)+(it.l?'<span class="lv">'+it.l+'</span>':'')+(on?'<i class="dot"></i>':'')+'</button>';
+}
+function revHTML(){
+  const ch=S.rvCh||1,tr=S.rvTier||1,T=DR.chapters[ch-1],mat=S.rvMat&&MUSE[S.rvMat]?S.rvMat:null;
+  const pl=(q,s,p)=>q+' '+(q===1?s:p);
+  const bosses=[];
+  DR.drops.forEach(d=>{if(d.ch!==ch)return;const rows=d.rows.filter(r=>r[0]===tr);if(rows.length)bosses.push({boss:d.boss,mode:d.mode,rows:rows})});
+  const nDrop=bosses.reduce((s,b)=>s+b.rows.length,0);
+  const open=S.rvOpen!==false;
+  const head='<h2 class="sh"><button class="rvtog" data-act="rvtog" aria-expanded="'+open+'"><span class="rvarr">'+(open?'▾':'▸')+'</span> Drops · para que serve cada material</button></h2>';
+  if(!open)return head;
+  let h=head
+  +'<div class="tabs" role="group" aria-label="Capítulos">'+DR.chapters.map(c=>'<span class="tw"><button class="tab'+(c.n===ch?' on':'')+'" data-act="rvch" data-n="'+c.n+'" aria-pressed="'+(c.n===ch)+'">Cap. '+c.n+' · '+esc(c.name)+'</button></span>').join('')+'</div>'
+  +'<div class="groups" role="group" aria-label="Dusks">'+T.tiers.map((t,i)=>'<button class="gp'+(i+1===tr?' on':'')+'" data-act="rvtier" data-n="'+(i+1)+'" aria-pressed="'+(i+1===tr)+'">Dusk '+ch+'-'+(i+1)+' · '+esc(t)+'</button>').join('')+'</div>';
+  let left='';
+  bosses.forEach(b=>{
+    left+='<div class="bsub" style="--cc:'+epCol(ch,tr)+'">'+esc(b.boss)+' <small>'+esc(b.mode)+'</small></div><div class="rvlist">'
+    +b.rows.map(r=>{
+      const n=r[1],u=(MUSE[n]||[]).length,on=n===mat;
+      return '<button class="rvmat'+(on?' sel':'')+'" data-act="rvmat" data-m="'+MIDX[n]+'" aria-pressed="'+on+'"><span class="rvi">'+matIcon(n)+'</span><span class="rvt"><span class="rvn" style="color:'+(RCOL[rar(n)]||'#fff')+'">'+esc(n)+'</span><small>'+(u?'usado em '+pl(u,'peça','peças'):'sem uso nas receitas')+'</small></span></button>';
+    }).join('')+'</div>';
+  });
+  if(!bosses.length)left='<p class="dkempty">Nenhum drop cadastrado.</p>';
+  let right;
+  if(!mat)right='<div class="selname none">Selecione um material na lista</div><p class="meta">Mostra todas as peças da forja que usam o material, para você saber o que dá para forjar com ele.</p>';
+  else{
+    const items=MUSE[mat].slice().sort((a,b)=>FURN.findIndex(f=>f.id===a.f)-FURN.findIndex(f=>f.id===b.f)||GROUPS[a.f].indexOf(a.g)-GROUPS[b.f].indexOf(b.g)||a.l-b.l);
+    const src=[];(SRC[mat]||[]).slice().sort(srcSort).forEach(s=>{const k='Dusk '+s.ch+'-'+s.tier+' · '+s.boss;if(src.indexOf(k)<0)src.push(k)});
+    let grp='',last='';
+    items.forEach(it=>{
+      const g=FURN.find(f=>f.id===it.f).name+' · '+it.g;
+      if(g!==last){if(last)grp+='</div>';grp+='<div class="rvgl">'+esc(g)+'</div><div class="rvtiles">';last=g}
+      grp+=itemTile(it,'rvitem');
+    });
+    grp+='</div>';
+    const q=it=>(it.m.find(x=>x[0]===mat)||[0,0])[1];
+    const sel=S.sel&&ITEM[S.sel]&&MUSE[mat].indexOf(ITEM[S.sel])>=0?ITEM[S.sel]:null;
+    right='<div class="selname"><span style="color:'+(RCOL[rar(mat)]||'#fff')+'">'+esc(mat)+'</span> <small>USADO EM '+pl(items.length,'PEÇA','PEÇAS')+'</small></div>'
+    +'<p class="meta">Dropa em: '+esc(src.join(' · '))+'</p>'
+    +grp
+    +(sel?'<p class="meta rvq">'+esc(sel.n)+' usa <b>'+pl(q(sel),'unidade','unidades')+'</b> de '+esc(mat)+'.</p>'+detailHTML(sel):'<p class="meta">Clique numa peça para ver a receita completa e equipar.</p>');
+  }
+  return h+'<div class="rvwrap"><div class="rvleft"><p class="meta">'+pl(nDrop,'drop','drops')+' neste Dusk</p>'+left+'</div><div class="rvright">'+right+'</div></div>';
+}
+
+function forgeHTML(){
+  const fu=FURN.find(f=>f.id===S.furn);
+  const list=ITEMS.filter(i=>i.f===S.furn&&i.g===S.group);
+  const selIt=S.sel?ITEM[S.sel]:null,chain=selIt?chainOf(selIt):{},chl=Object.keys(chain).map(k=>chain[k]);
+  const chMax=arr=>arr.reduce((m,x)=>Math.max(m,x.l),0);
+  const bypos={};list.forEach((x,i)=>{bypos[x.p!=null?x.p:i]=x});
+  const cells=Array.from({length:32},(_,i)=>{
+    const it=bypos[i];
+    if(!it)return '<div class="tile unk" aria-hidden="true">?</div>';
+    const sel=S.sel===it.id,eqs=slotOn(it),on=!!eqs;
+    const st=on?C.pieces[eqs].stat:null;
+    const can=canForge(it);
+    return '<button class="tile'+(it.au?' gold':'')+(sel?' sel':'')+(on?' on':'')+(can?' can':'')+(chain[it.id]?' ch':'')+'" data-act="tile" data-id="'+it.id+'" draggable="true" style="--sc:'+tcol(it)+';--tc:'+TIERC(it)+(chain[it.id]?';--cc:'+chainCol(it.l):'')+(st?';--c:'+st.c:'')+'" aria-label="'+esc(it.n)+', nível '+it.l+(on?', equipada':'')+(can?', materiais suficientes para forjar':'')+'" aria-pressed="'+sel+'">'+glyphOf(it)+(it.l?'<span class="lv">'+it.l+'</span>':'')+(on?'<i class="dot"></i>':'')+'</button>';
+  }).join('');
+  return ''
+  +'<h2 class="sh"><span>Forja · '+fu.full+' · '+list.length+' peças</span></h2>'
+  +'<div class="tabs" role="group" aria-label="Fornalhas">'+FURN.map(f=>{const cf=chl.filter(x=>x.f===f.id);return '<span class="tw"><button class="tab'+(f.id===S.furn?' on':'')+(cf.length?' chn':'')+'"'+(cf.length?' style="--cc:'+chainCol(chMax(cf))+'"':'')+' data-act="furn" data-id="'+f.id+'" aria-pressed="'+(f.id===S.furn)+'">'+f.name+'</button></span>'}).join('')+'</div>'
+  +'<div class="groups" role="group" aria-label="Categorias">'+GROUPS[S.furn].map(g=>{const cg=chl.filter(x=>x.f===S.furn&&x.g===g);return '<button class="gp'+(g===S.group?' on':'')+(cg.length?' chn':'')+'"'+(cg.length?' style="--cc:'+chainCol(chMax(cg))+'"':'')+' data-act="group" data-g="'+esc(g)+'" aria-pressed="'+(g===S.group)+'">'+esc(g)+'</button>'}).join('')+'</div>'
+  +'<div class="fgrid">'+cells+'</div>'
+  +detailHTML(S.sel?ITEM[S.sel]:null);
+}
+
 
 /* ---------- Personagem ---------- */
 const NOUSE={wing:G.wing,tome:G.tome,fairy:G.fairy};
@@ -905,7 +986,7 @@ function trackerHTML(){
 }
 
 /* ---------- Render ---------- */
-const $forge=document.getElementById('forge'),$inv=document.getElementById('inv'),$trk=document.getElementById('tracker');
+const $forge=document.getElementById('forge'),$inv=document.getElementById('inv'),$trk=document.getElementById('tracker'),$rev=document.getElementById('rev');
 function render(){
   C=calc();tipKey=null;
   const a=document.activeElement;
@@ -914,6 +995,7 @@ function render(){
   if(keep){try{range=[keep.selectionStart,keep.selectionEnd]}catch(e){}}
   $forge.innerHTML=forgeHTML();
   $inv.innerHTML=invHTML();
+  $rev.innerHTML=revHTML();
   $trk.innerHTML=trackerHTML();
   if(S.ren!=null){const ri=document.getElementById('setname');if(ri&&document.activeElement!==ri){ri.focus();ri.select()}}
   else if(keep){
@@ -976,7 +1058,11 @@ document.addEventListener('click',e=>{
   switch(el.dataset.act){
     case 'furn':S.furn=el.dataset.id;S.group=GROUPS[S.furn][0];S.sel=null;save();break;
     case 'group':S.group=el.dataset.g;S.sel=null;save();break;
-    case 'tile':{
+    case 'rvtog':S.rvOpen=S.rvOpen===false;save();break;
+    case 'rvch':S.rvCh=Number(el.dataset.n);S.rvMat=null;save();break;
+    case 'rvtier':S.rvTier=Number(el.dataset.n);S.rvMat=null;save();break;
+    case 'rvmat':{const n=ALLM[Number(el.dataset.m)];S.rvMat=S.rvMat===n?null:n;save();break}
+    case 'rvitem':case 'tile':{
       const id=el.dataset.id,now=Date.now();
       S.sel=id;
       if(S.lastTile===id&&now-(S.lastTileT||0)<500){S.lastTile=null;equipItem(id)}
@@ -1245,7 +1331,7 @@ function matTipHTML(n){
 function tipTarget(e){
   const mt=e.target&&e.target.closest&&e.target.closest('[data-mat]');
   if(mt&&ALLM[mt.dataset.mat])return {mat:ALLM[mt.dataset.mat],hint:''};
-  const t=e.target&&e.target.closest&&e.target.closest('[data-act="tile"],.slot.full[data-slot]');
+  const t=e.target&&e.target.closest&&e.target.closest('[data-act="tile"],[data-act="rvitem"],.slot.full[data-slot]');
   if(!t)return null;
   if(t.dataset.act==='tile'){const it=ITEM[t.dataset.id];return it?{it:it,hint:'Duplo clique: equipar'+(canForge(it)?' · materiais completos':'')}:null}
   const e2=S.equipped[t.dataset.slot],it=e2&&ITEM[e2.id];
@@ -1270,7 +1356,7 @@ window.addEventListener('scroll',()=>{tipEl.classList.remove('on');tipKey=null},
 
 /* Arrastar da Forja para o personagem */
 document.addEventListener('dragstart',e=>{
-  const t=e.target.closest&&e.target.closest('[data-act="tile"]');
+  const t=e.target.closest&&e.target.closest('[data-act="tile"],[data-act="rvitem"]');
   if(!t)return;
   drag=t.dataset.id;
   try{e.dataTransfer.setData('text/plain',drag);e.dataTransfer.effectAllowed='move'}catch(_){}
